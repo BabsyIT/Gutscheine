@@ -30,7 +30,7 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1000;
+            z-index: 1100; /* erhöht, damit Suchleiste und Buttons vor Overlay sind */
             display: flex;
             gap: 10px;
             align-items: center;
@@ -77,12 +77,18 @@
             font-weight: bold;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             transition: all 0.3s;
+            position: relative;
         }
 
         .filter-button:hover,
         .filter-button.active {
             background: var(--secondary-color, #009fad);
             color: white;
+        }
+
+        /* Sicherstellen, dass der Filter-Button jederzeit klickbar ist */
+        #filter-btn {
+            z-index: 1101;
         }
 
         .view-toggle {
@@ -137,11 +143,6 @@
             display: block;
         }
 
-        /* Hide search bar when list view is active 
-        body:has(#list-view.active) .search-filter-bar {
-            display: none;
-        }
-        */
         .list-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -556,7 +557,7 @@
                 grid-template-columns: 1fr;
                 padding: 10px;
             }
-            /* Fade overlay for list view */
+            /* Fade overlay for list view: pointer-events disabled so es blockiert keine Buttons */
             .list-fade-overlay {
                 position: fixed;
                 top: 100px; /* adjust based on your header + spacing */
@@ -564,13 +565,18 @@
                 width: 100vw;
                 height: 80px; /* how tall the gradient fade is */
                 pointer-events: none; /* allow clicks to pass through */
-                z-index: 900; /* below search/filter bar (z-index: 1000) */
+                z-index: 900; /* below search/filter bar (z-index: 1100) */
                 background: linear-gradient(
                 to bottom,
                 rgba(245, 245, 245, 1) 0%,   /* solid color of background */
                 rgba(245, 245, 245, 0) 100%  /* fade to transparent */
                 );
             }
+        }
+
+        /* Ensure overlay never blocks clicks on desktop as well */
+        .list-fade-overlay {
+            pointer-events: none;
         }
     </style>
 </head>
@@ -600,7 +606,8 @@
                 <input type="text" id="search-input" placeholder="Partner suchen...">
                 <button id="search-btn"><i class="fas fa-search"></i></button>
             </div>
-            <button id="filter-btn" class="filter-button">
+            <!-- Fallback onclick hinzugefügt, z-index in CSS sorgt für Vorrang -->
+            <button id="filter-btn" class="filter-button" onclick="openFilterModal()">
                 <i class="fas fa-filter"></i> Filter
             </button>
         </div>
@@ -662,6 +669,7 @@
                 const response = await fetch('partners.json');
                 partners = await response.json();
                 console.log(`${partners.length} Partner erfolgreich geladen`);
+                // Optional: sobald Daten geladen sind, kannst du Kategorien vorbereiten oder UI aktualisieren
                 return true;
             } catch (error) {
                 console.error('Fehler beim Laden der Partner:', error);
@@ -676,7 +684,7 @@
             
             if (!loaded) {
                 console.error('Partner konnten nicht geladen werden');
-                return;
+                // trotzdem map initialisieren, damit UI nicht blockiert
             }
 
             map = L.map('map').setView([47.3769, 8.5417], 8);
@@ -691,20 +699,26 @@
 
         // Load partners on map
         function loadPartners() {
+            if (!map) return;
             clearMarkers();
 
             // Gefilterte Partner mit GPS-Koordinaten anzeigen
             const mappablePartners = getFilteredPartners();
 
             mappablePartners.forEach((partner, index) => {
-                const logoText = partner.partnername.charAt(0);
+                // Sicherstellen, dass lat/lng Zahlen sind
+                const lat = Number(partner.lat);
+                const lng = Number(partner.lng);
+                if (!isFinite(lat) || !isFinite(lng)) return;
+
+                const logoText = partner.partnername ? partner.partnername.charAt(0).toUpperCase() : '?';
 
                 // Marker HTML: zeige Bild wenn vorhanden, sonst Initialbuchstabe
                 const markerHtml = partner.logos
                     ? `<img src="${partner.logos}" alt="${partner.partnername}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"><div style="display:none;">${logoText}</div>`
-                    : logoText;
+                    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:bold;">${logoText}</div>`;
 
-                const marker = L.marker([partner.lat, partner.lng], {
+                const marker = L.marker([lat, lng], {
                     icon: L.divIcon({
                         className: 'custom-marker',
                         html: markerHtml,
@@ -726,35 +740,39 @@
 
         // Create popup content
         function createPopupContent(partner) {
-            const logoText = partner.partnername.charAt(0);
+            const logoText = partner.partnername ? partner.partnername.charAt(0).toUpperCase() : '?';
 
             // Logo HTML: zeige Bild wenn vorhanden, sonst Initialbuchstabe
             const logoHtml = partner.logos
                 ? `<img src="${partner.logos}" alt="${partner.partnername}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"><div style="display:none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: white;">${logoText}</div>`
-                : logoText;
+                : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold;color:white;">${logoText}</div>`;
+
+            // Escape single quotes für inline onclick (minimal)
+            const partnerNameEsc = (partner.partnername || '').replace(/'/g, "\\'");
+            const beschreibungEsc = (partner.beschreibung_de || '').replace(/'/g, "\\'").replace(/\n/g, ' ');
 
             return `
                 <div class="popup-content">
-                    <div class="popup-title">${partner.partnername}</div>
+                    <div class="popup-title">${partner.partnername || 'Partner'}</div>
                     <div class="popup-logo">
                         ${logoHtml}
                     </div>
                     <div class="popup-category">
-                        ${partner.category}
+                        ${partner.category || ''}
                     </div>
                     <div class="popup-address">
-                        <i class="fas fa-map-marker-alt"></i> ${partner.adresse}
+                        <i class="fas fa-map-marker-alt"></i> ${partner.adresse || ''}
                     </div>
                     <div class="popup-description">
-                        ${partner.beschreibung_de}
+                        ${partner.beschreibung_de || ''}
                     </div>
                     ${partner.homepage ? `<div class="popup-website">
-                        <a href="${partner.homepage}" target="_blank">
+                        <a href="${partner.homepage}" target="_blank" rel="noopener noreferrer">
                             <i class="fas fa-external-link-alt"></i> Website besuchen
                         </a>
                     </div>` : ''}
                     <div class="popup-voucher-btn">
-                        <button onclick="generateVoucher('${partner.partnername.replace(/'/g, "\\'")}', '${partner.beschreibung_de.replace(/'/g, "\\'")}')">
+                        <button onclick="generateVoucher('${partnerNameEsc}', '${beschreibungEsc}')">
                             <i class="fas fa-gift"></i> Gutschein generieren
                         </button>
                     </div>
@@ -781,33 +799,37 @@
             const card = document.createElement('div');
             card.className = 'list-card';
 
-            const logoText = partner.partnername.charAt(0).toUpperCase();
+            const logoText = partner.partnername ? partner.partnername.charAt(0).toUpperCase() : '?';
 
             // Logo HTML: zeige Bild wenn vorhanden, sonst Initialbuchstabe
             const logoHtml = partner.logos
                 ? `<img src="${partner.logos}" alt="${partner.partnername}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"><div style="display:none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: #009fad;">${logoText}</div>`
-                : logoText;
+                : `${logoText}`;
+
+            const lat = Number(partner.lat);
+            const lng = Number(partner.lng);
+            const hasHomepage = partner.homepage && partner.homepage.trim().length > 0;
 
             card.innerHTML = `
                 <div class="list-card-header">
                     <div class="list-card-logo">${logoHtml}</div>
                     <div class="list-card-info">
-                        <h3>${partner.partnername}</h3>
-                        <span class="list-card-category">${partner.category}</span>
+                        <h3>${partner.partnername || 'Partner'}</h3>
+                        <span class="list-card-category">${partner.category || ''}</span>
                     </div>
                 </div>
                 <div class="list-card-body">
-                    <p class="list-card-description">${partner.beschreibung_de}</p>
+                    <p class="list-card-description">${partner.beschreibung_de || ''}</p>
                     <div class="list-card-address">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span>${partner.adresse}</span>
+                        <span>${partner.adresse || ''}</span>
                     </div>
                     <div class="list-card-actions">
-                        <button class="list-card-btn list-card-btn-secondary" onclick="showOnMap(${partner.lat}, ${partner.lng})">
+                        <button class="list-card-btn list-card-btn-secondary" onclick="showOnMap(${isFinite(lat) ? lat : 0}, ${isFinite(lng) ? lng : 0})">
                             <i class="fas fa-map-marker-alt"></i> Auf Karte
                         </button>
-                        ${partner.homepage ? `
-                            <a href="${partner.homepage}" target="_blank" class="list-card-btn list-card-btn-primary">
+                        ${hasHomepage ? `
+                            <a href="${partner.homepage}" target="_blank" rel="noopener noreferrer" class="list-card-btn list-card-btn-primary">
                                 <i class="fas fa-external-link-alt"></i> Website
                             </a>
                         ` : ''}
@@ -822,20 +844,25 @@
         function showOnMap(lat, lng) {
             toggleView('map');
             setTimeout(() => {
-                map.setView([lat, lng], 15);
-                // Find and open the marker popup
-                markers.forEach(marker => {
-                    const markerLatLng = marker.getLatLng();
-                    if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
-                        marker.openPopup();
-                    }
-                });
+                if (map && isFinite(lat) && isFinite(lng)) {
+                    map.setView([lat, lng], 15);
+                    // Find and open the marker popup (match approximate coordinates)
+                    markers.forEach(marker => {
+                        const markerLatLng = marker.getLatLng();
+                        if (Math.abs(markerLatLng.lat - lat) < 0.0001 && Math.abs(markerLatLng.lng - lng) < 0.0001) {
+                            marker.openPopup();
+                        }
+                    });
+                }
             }, 300);
         }
 
         // Clear all markers
         function clearMarkers() {
-            markers.forEach(marker => map.removeLayer(marker));
+            if (!map) return;
+            markers.forEach(marker => {
+                try { map.removeLayer(marker); } catch(e){ /* ignore */ }
+            });
             markers = [];
         }
 
@@ -950,7 +977,7 @@
         }
 
         function performSearch() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const searchTerm = (document.getElementById('search-input').value || '').toLowerCase();
 
             if (!searchTerm) {
                 return;
@@ -960,17 +987,17 @@
             const mappablePartners = getFilteredPartners();
             
             const matchingPartner = mappablePartners.find(partner => 
-                partner.partnername.toLowerCase().includes(searchTerm) ||
-                partner.category.toLowerCase().includes(searchTerm) ||
-                partner.adresse.toLowerCase().includes(searchTerm)
+                (partner.partnername && partner.partnername.toLowerCase().includes(searchTerm)) ||
+                (partner.category && partner.category.toLowerCase().includes(searchTerm)) ||
+                (partner.adresse && partner.adresse.toLowerCase().includes(searchTerm))
             );
 
             if (matchingPartner) {
-                if (currentView === 'map') {
-                    map.setView([matchingPartner.lat, matchingPartner.lng], 15);
+                if (currentView === 'map' && map) {
+                    map.setView([Number(matchingPartner.lat), Number(matchingPartner.lng)], 15);
                     markers.forEach(marker => {
                         const markerLatLng = marker.getLatLng();
-                        if (markerLatLng.lat === matchingPartner.lat && markerLatLng.lng === matchingPartner.lng) {
+                        if (Math.abs(markerLatLng.lat - Number(matchingPartner.lat)) < 0.0001 && Math.abs(markerLatLng.lng - Number(matchingPartner.lng)) < 0.0001) {
                             marker.openPopup();
                         }
                     });
@@ -978,7 +1005,7 @@
                     // Scroll to card in list view
                     const cards = document.querySelectorAll('.list-card');
                     cards.forEach(card => {
-                        if (card.querySelector('h3').textContent === matchingPartner.partnername) {
+                        if (card.querySelector('h3') && card.querySelector('h3').textContent === matchingPartner.partnername) {
                             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             card.style.boxShadow = '0 5px 30px rgba(0,159,173,0.4)';
                             setTimeout(() => {
@@ -1004,11 +1031,23 @@
             modal.classList.remove('active');
         }
 
+        // Robuste Version von populateCategories
         function populateCategories() {
             const categoryContainer = document.getElementById('categoryFilters');
 
-            // Extract unique categories from partners
-            const categories = [...new Set(partners.map(p => p.category))].sort();
+            // Wenn noch keine Daten geladen: Rückmeldung anzeigen
+            if (!partners || partners.length === 0) {
+                categoryContainer.innerHTML = '<p>Keine Kategorien verfügbar (Daten werden noch geladen)...</p>';
+                return;
+            }
+
+            // Extract unique categories (nur nicht-leere Strings)
+            const categories = [...new Set(partners.map(p => (p.category || '').trim()).filter(Boolean))].sort();
+
+            if (categories.length === 0) {
+                categoryContainer.innerHTML = '<p>Keine Kategorien gefunden.</p>';
+                return;
+            }
 
             categoryContainer.innerHTML = '';
             categories.forEach(category => {
@@ -1062,10 +1101,17 @@
         }
 
         function getFilteredPartners() {
+            // Wenn keine Filter gesetzt, gib alle mit gültigen Koordinaten zurück
+            const withCoords = partners.filter(p => {
+                const lat = Number(p.lat);
+                const lng = Number(p.lng);
+                return isFinite(lat) && isFinite(lng);
+            });
+
             if (activeFilters.length === 0) {
-                return partners.filter(p => p.lat && p.lng);
+                return withCoords;
             }
-            return partners.filter(p => p.lat && p.lng && activeFilters.includes(p.category));
+            return withCoords.filter(p => activeFilters.includes((p.category || '').trim()));
         }
 
         // Initialize everything on page load
@@ -1074,8 +1120,11 @@
             initMap();
             setupSearch();
 
-            // Setup filter button
-            document.getElementById('filter-btn').addEventListener('click', openFilterModal);
+            // Setup filter button (Event Listener bleibt, onclick-Attribut ist Fallback)
+            const fb = document.getElementById('filter-btn');
+            if (fb) {
+                fb.addEventListener('click', openFilterModal);
+            }
 
             // Close modal when clicking outside
             document.getElementById('filterModal').addEventListener('click', function(e) {
