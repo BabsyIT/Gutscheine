@@ -1,1089 +1,845 @@
-<!doctype html> 
-
-<html lang="de"> 
-
- <head> 
-
-  <meta charset="UTF-8"> 
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-
-  <title>Partnergutschein Manager</title> 
-
-  <script src="/_sdk/data_sdk.js"></script> 
-
-  <script src="/_sdk/element_sdk.js"></script> 
-
-  <script src="https://cdn.tailwindcss.com"></script> 
-
-  <style> 
-
-    body { 
-
-      box-sizing: border-box; 
-
-      margin: 0; 
-
-      padding: 0; 
-
-      height: 100%; 
-
-    } 
-
-    html { 
-
-      height: 100%; 
-
-    } 
-
-    .voucher-card { 
-
-      transition: transform 0.2s, box-shadow 0.2s; 
-
-    } 
-
-    .voucher-card:hover { 
-
-      transform: translateY(-2px); 
-
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1); 
-
-    } 
-
-    .toast { 
-
-      position: fixed; 
-
-      top: 20px; 
-
-      right: 20px; 
-
-      padding: 16px 24px; 
-
-      border-radius: 8px; 
-
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-
-      z-index: 1000; 
-
-      animation: slideIn 0.3s ease-out; 
-
-    } 
-
-    @keyframes slideIn { 
-
-      from { 
-
-        transform: translateX(400px); 
-
-        opacity: 0; 
-
-      } 
-
-      to { 
-
-        transform: translateX(0); 
-
-        opacity: 1; 
-
-      } 
-
-    } 
-
-  </style> 
-
-  <style>@view-transition { navigation: auto; }</style> 
-
- </head> 
-
- <body> 
-
-  <div id="app" class="min-h-full flex flex-col"><!-- Header --> 
-
-   <header class="shadow-sm"> 
-
-    <div class="max-w-6xl mx-auto px-6 py-4"> 
-
-     <div class="flex justify-between items-center"> 
-
-      <h1 id="page-title" class="text-3xl font-bold">Babsy Partnergutscheine</h1><!-- Desktop Menu --> 
-
-      <nav class="hidden md:flex space-x-6"><button id="nav-home" class="px-4 py-2 rounded-lg font-medium transition-colors"> 🏠 Startseite </button> <button id="nav-vouchers" class="px-4 py-2 rounded-lg font-medium transition-colors"> 🎫 Meine Gutscheine </button> <button id="nav-create" class="px-4 py-2 rounded-lg font-medium transition-colors"> ✨ Erstellen </button> <button id="nav-redeem" class="px-4 py-2 rounded-lg font-medium transition-colors"> 🎁 Einlösen </button> 
-
-      </nav><!-- Mobile Menu Button --> <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg"> 
-
-       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path> 
-
-       </svg></button> 
-
-     </div><!-- Mobile Menu --> 
-
-     <nav id="mobile-menu" class="hidden md:hidden mt-4 space-y-2"><button id="mobile-nav-home" class="w-full text-left px-4 py-2 rounded-lg font-medium transition-colors"> 🏠 Startseite </button> <button id="mobile-nav-vouchers" class="w-full text-left px-4 py-2 rounded-lg font-medium transition-colors"> 🎫 Meine Gutscheine </button> <button id="mobile-nav-create" class="w-full text-left px-4 py-2 rounded-lg font-medium transition-colors"> ✨ Erstellen </button> <button id="mobile-nav-redeem" class="w-full text-left px-4 py-2 rounded-lg font-medium transition-colors"> 🎁 Einlösen </button> 
-
-     </nav> 
-
-    </div> 
-
-   </header><!-- Main Content --> 
-
-   <main class="flex-1 max-w-6xl mx-auto px-6 py-8 w-full"><!-- Registration Form --> 
-
-    <div class="mb-8 p-6 rounded-lg shadow-md" style="background-color: #ffffff"> 
-
-     <h2 class="text-2xl font-bold mb-4">Registrierung für Partnergutscheine</h2> 
-
-     <form id="registration-form" class="grid grid-cols-1 md:grid-cols-2 gap-4"> 
-
-      <div><label for="first-name" class="block font-semibold mb-2">Vorname *</label> <input type="text" id="first-name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"> 
-
-      </div> 
-
-      <div><label for="last-name" class="block font-semibold mb-2">Nachname *</label> <input type="text" id="last-name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"> 
-
-      </div> 
-
-      <div class="md:col-span-2"><label for="email" class="block font-semibold mb-2">E-Mail-Adresse *</label> <input type="email" id="email" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"> 
-
-      </div> 
-
-      <div class="md:col-span-2 space-y-3"> 
-
-       <div class="flex items-center"><input type="checkbox" id="app-user" class="mr-3 w-4 h-4"> <label for="app-user" class="font-medium">Ich bin App-User</label> 
-
-       </div> 
-
-       <div class="flex items-center"><input type="checkbox" id="club-member" class="mr-3 w-4 h-4"> <label for="club-member" class="font-medium">Ich bin Vereinsmitglied</label> 
-
-       </div> 
-
-       <div class="flex items-start"><input type="checkbox" id="newsletter" required class="mr-3 w-4 h-4 mt-1"> <label for="newsletter" class="font-medium"> Ich stimme dem Erhalt des Newsletters zu. Dies ist eine Bedingung für die Nutzung der Plattform. * </label> 
-
-       </div> 
-
-      </div> 
-
-      <div class="md:col-span-2"><button type="submit" id="register-btn" class="w-full px-6 py-3 rounded-lg font-semibold transition-colors"> Registrieren </button> 
-
-      </div> 
-
-     </form> 
-
-    </div><!-- Action Buttons --> 
-
-    <div class="flex gap-4 mb-8"><button id="create-btn" class="px-6 py-3 rounded-lg font-semibold transition-colors"> ✨ Gutschein erstellen </button> <button id="redeem-btn" class="px-6 py-3 rounded-lg font-semibold transition-colors"> 🎁 Gutschein einlösen </button> 
-
-    </div><!-- Voucher List --> 
-
-    <div> 
-
-     <h2 class="text-2xl font-bold mb-4">Meine Gutscheine</h2> 
-
-     <div id="voucher-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><!-- Vouchers will be rendered here --> 
-
-     </div> 
-
-     <div id="empty-state" class="text-center py-12 hidden"> 
-
-      <div class="text-6xl mb-4"> 
-
-       🎫 
-
-      </div> 
-
-      <p class="text-xl mb-2">Noch keine Gutscheine</p> 
-
-      <p>Erstelle deinen ersten Gutschein!</p> 
-
-     </div> 
-
-    </div> 
-
-   </main><!-- Create Modal --> 
-
-   <div id="create-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"> 
-
-    <div class="absolute inset-0 bg-black bg-opacity-50" id="create-modal-backdrop"></div> 
-
-    <div class="relative rounded-lg shadow-xl max-w-md w-full p-6"> 
-
-     <h3 class="text-2xl font-bold mb-4">Neuen Gutschein erstellen</h3> 
-
-     <form id="create-form"> 
-
-      <div class="mb-6"><label for="voucher-partner" class="block font-semibold mb-2">Gutschein auswählen</label> <select id="voucher-partner" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white"> <option value="">Bitte Gutschein auswählen...</option> <option value="Restaurant Bella Vista|Abendessen für 2 Personen|Genießen Sie ein romantisches 3-Gänge-Menü">🍽️ Restaurant Bella Vista - Abendessen für 2 Personen</option> <option value="Wellness Oase|60 Min Entspannungsmassage|Lassen Sie sich bei einer wohltuenden Ganzkörpermassage verwöhnen">💆‍♀️ Wellness Oase - 60 Min Entspannungsmassage</option> <option value="Kino Metropol|2 Kinokarten + Popcorn|Erleben Sie die neuesten Blockbuster mit Snacks">🎬 Kino Metropol - 2 Kinokarten + Popcorn</option> <option value="Fitness Studio Power|1 Monat Mitgliedschaft|Trainieren Sie einen Monat kostenlos in unserem Studio">💪 Fitness Studio Power - 1 Monat Mitgliedschaft</option> <option value="Café Gemütlich|Kaffee &amp; Kuchen für 2|Genießen Sie hausgemachten Kuchen mit frischem Kaffee">☕ Café Gemütlich - Kaffee &amp; Kuchen für 2</option> <option value="Buchhandlung Lesezeit|Büchergutschein 25€|Stöbern Sie in unserem Sortiment und wählen Sie Ihre Lieblingsbücher">📚 Buchhandlung Lesezeit - Büchergutschein 25€</option> <option value="Friseur Schönheit|Waschen, Schneiden, Föhnen|Lassen Sie sich von unserem Profi-Team verwöhnen">✂️ Friseur Schönheit - Waschen, Schneiden, Föhnen</option> <option value="Blumen Paradies|Blumenstrauß nach Wahl|Überraschen Sie Ihre Liebsten mit einem frischen Blumenstrauß">🌸 Blumen Paradies - Blumenstrauß nach Wahl</option> <option value="Bäckerei Goldkruste|Frühstück für 2 Personen|Starten Sie den Tag mit frischen Backwaren und Kaffee">🥖 Bäckerei Goldkruste - Frühstück für 2 Personen</option> <option value="Apotheke Gesundheit|Beratung + Wellness-Paket|Professionelle Beratung mit hochwertigen Wellness-Produkten">💊 Apotheke Gesundheit - Beratung + Wellness-Paket</option> </select> 
-
-      </div> 
-
-      <div class="flex gap-3"><button type="submit" id="create-submit-btn" class="flex-1 px-6 py-3 rounded-lg font-semibold transition-colors"> Gutschein erstellen </button> <button type="button" id="create-cancel-btn" class="flex-1 px-6 py-3 rounded-lg font-semibold transition-colors"> Abbrechen </button> 
-
-      </div> 
-
-     </form> 
-
-    </div> 
-
-   </div><!-- Redeem Modal --> 
-
-   <div id="redeem-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"> 
-
-    <div class="absolute inset-0 bg-black bg-opacity-50" id="redeem-modal-backdrop"></div> 
-
-    <div class="relative rounded-lg shadow-xl max-w-md w-full p-6"> 
-
-     <h3 class="text-2xl font-bold mb-4">Gutschein einlösen</h3> 
-
-     <form id="redeem-form"> 
-
-      <div class="mb-6"><label for="redeem-code" class="block font-semibold mb-2">Gutschein-Code</label> <input type="text" id="redeem-code" required placeholder="XXXX-XXXX" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 uppercase"> 
-
-      </div> 
-
-      <div class="flex gap-3"><button type="submit" id="redeem-submit-btn" class="flex-1 px-6 py-3 rounded-lg font-semibold transition-colors"> Einlösen </button> <button type="button" id="redeem-cancel-btn" class="flex-1 px-6 py-3 rounded-lg font-semibold transition-colors"> Abbrechen </button> 
-
-      </div> 
-
-     </form> 
-
-    </div> 
-
-   </div> 
-
-  </div> 
-
-  <script> 
-
-    const defaultConfig = { 
-
-      background_color: "#f3f4f6", 
-
-      card_color: "#ffffff", 
-
-      text_color: "#1f2937", 
-
-      primary_action_color: "#a71a80", 
-
-      secondary_action_color: "#009fad", 
-
-      page_title: "Babsy Partnergutscheine", 
-
-      create_button_text: "Gutschein erstellen", 
-
-      redeem_button_text: "Gutschein einlösen", 
-
-      font_family: "system-ui", 
-
-      font_size: 16 
-
-    }; 
-
- 
-
-    let vouchers = []; 
-
- 
-
-    function generateVoucherCode() { 
-
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; 
-
-      let code = ''; 
-
-      for (let i = 0; i < 8; i++) { 
-
-        if (i === 4) code += '-'; 
-
-        code += chars.charAt(Math.floor(Math.random() * chars.length)); 
-
-      } 
-
-      return code; 
-
-    } 
-
- 
-
-    function showToast(message, type = 'success') { 
-
-      const toast = document.createElement('div'); 
-
-      toast.className = 'toast'; 
-
-      toast.style.backgroundColor = type === 'success' ? '#a71a80' : '#dc2626'; 
-
-      toast.style.color = '#ffffff'; 
-
-      toast.textContent = message; 
-
-      document.body.appendChild(toast); 
-
-      setTimeout(() => toast.remove(), 3000); 
-
-    } 
-
- 
-
-    function renderVouchers() { 
-
-      const voucherList = document.getElementById('voucher-list'); 
-
-      const emptyState = document.getElementById('empty-state'); 
-
-      const config = window.elementSdk?.config || defaultConfig; 
-
- 
-
-      if (vouchers.length === 0) { 
-
-        voucherList.innerHTML = ''; 
-
-        emptyState.classList.remove('hidden'); 
-
-        emptyState.style.color = config.text_color || defaultConfig.text_color; 
-
-        return; 
-
-      } 
-
- 
-
-      emptyState.classList.add('hidden'); 
-
-      voucherList.innerHTML = vouchers.map(voucher => ` 
-
-        <div class="voucher-card rounded-lg shadow-md p-6" style="background-color: ${config.card_color || defaultConfig.card_color}"> 
-
-          <div class="flex justify-between items-start mb-3"> 
-
-            <h3 class="text-xl font-bold" style="color: ${config.text_color || defaultConfig.text_color}">${voucher.title}</h3> 
-
-            <span class="px-3 py-1 rounded-full text-sm font-semibold" style="background-color: ${voucher.isRedeemed ? '#fed7d7' : '#d1fae5'}; color: ${voucher.isRedeemed ? '#991b1b' : '#166534'}"> 
-
-              ${voucher.isRedeemed ? '✓ Eingelöst' : '● Aktiv'} 
-
-            </span> 
-
-          </div> 
-
-          <p class="mb-3" style="color: ${config.text_color || defaultConfig.text_color}">${voucher.description}</p> 
-
-          <div class="mb-3 p-3 rounded" style="background-color: ${config.background_color || defaultConfig.background_color}"> 
-
-            <p class="text-sm font-semibold mb-1" style="color: ${config.text_color || defaultConfig.text_color}">Partner:</p> 
-
-            <p class="font-bold" style="color: ${config.secondary_action_color || defaultConfig.secondary_action_color}">${voucher.partner}</p> 
-
-          </div> 
-
-          <div class="mb-4 p-3 rounded" style="background-color: ${config.background_color || defaultConfig.background_color}"> 
-
-            <p class="text-sm font-semibold mb-1" style="color: ${config.text_color || defaultConfig.text_color}">Wert:</p> 
-
-            <p class="font-bold" style="color: ${config.primary_action_color || defaultConfig.primary_action_color}">${voucher.value}</p> 
-
-          </div> 
-
-          <div class="mb-3 p-3 rounded border-2 border-dashed" style="border-color: ${config.secondary_action_color || defaultConfig.secondary_action_color}"> 
-
-            <p class="text-sm font-semibold mb-1" style="color: ${config.text_color || defaultConfig.text_color}">Code:</p> 
-
-            <p class="font-mono font-bold text-lg" style="color: ${config.text_color || defaultConfig.text_color}">${voucher.code}</p> 
-
-          </div> 
-
-          ${voucher.isRedeemed ? `<p class="text-sm" style="color: ${config.secondary_action_color || defaultConfig.secondary_action_color}">Eingelöst am: ${new Date(voucher.redeemedAt).toLocaleDateString('de-DE')}</p>` : ''} 
-
-        </div> 
-
-      `).join(''); 
-
-    } 
-
- 
-
-    async function onConfigChange(config) { 
-
-      const baseFont = config.font_family || defaultConfig.font_family; 
-
-      const baseFontSize = config.font_size || defaultConfig.font_size; 
-
-      const fontStack = `${baseFont}, system-ui, -apple-system, sans-serif`; 
-
- 
-
-      document.body.style.backgroundColor = config.background_color || defaultConfig.background_color; 
-
-      document.body.style.fontFamily = fontStack; 
-
-      document.body.style.fontSize = `${baseFontSize}px`; 
-
-      document.body.style.color = config.text_color || defaultConfig.text_color; 
-
- 
-
-      document.querySelector('header').style.backgroundColor = config.card_color || defaultConfig.card_color; 
-
-      document.getElementById('page-title').textContent = config.page_title || defaultConfig.page_title; 
-
-      document.getElementById('page-title').style.color = config.text_color || defaultConfig.text_color; 
-
-      document.getElementById('page-title').style.fontSize = `${baseFontSize * 2}px`; 
-
- 
-
-      const h2Elements = document.querySelectorAll('h2'); 
-
-      h2Elements.forEach(h2 => { 
-
-        h2.style.color = config.text_color || defaultConfig.text_color; 
-
-        h2.style.fontSize = `${baseFontSize * 1.5}px`; 
-
-      }); 
-
- 
-
-      const createBtn = document.getElementById('create-btn'); 
-
-      createBtn.textContent = `✨ ${config.create_button_text || defaultConfig.create_button_text}`; 
-
-      createBtn.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color; 
-
-      createBtn.style.color = '#ffffff'; 
-
- 
-
-      const redeemBtn = document.getElementById('redeem-btn'); 
-
-      redeemBtn.textContent = `🎁 ${config.redeem_button_text || defaultConfig.redeem_button_text}`; 
-
-      redeemBtn.style.backgroundColor = config.secondary_action_color || defaultConfig.secondary_action_color; 
-
-      redeemBtn.style.color = '#ffffff'; 
-
- 
-
-      const registerBtn = document.getElementById('register-btn'); 
-
-      registerBtn.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color; 
-
-      registerBtn.style.color = '#ffffff'; 
-
- 
-
-      const modals = document.querySelectorAll('#create-modal > div:last-child, #redeem-modal > div:last-child'); 
-
-      modals.forEach(modal => { 
-
-        modal.style.backgroundColor = config.card_color || defaultConfig.card_color; 
-
-      }); 
-
- 
-
-      const modalTitles = document.querySelectorAll('#create-modal h3, #redeem-modal h3'); 
-
-      modalTitles.forEach(title => { 
-
-        title.style.color = config.text_color || defaultConfig.text_color; 
-
-        title.style.fontSize = `${baseFontSize * 1.5}px`; 
-
-      }); 
-
- 
-
-      const labels = document.querySelectorAll('label'); 
-
-      labels.forEach(label => { 
-
-        label.style.color = config.text_color || defaultConfig.text_color; 
-
-        label.style.fontSize = `${baseFontSize}px`; 
-
-      }); 
-
- 
-
-      const inputs = document.querySelectorAll('input, textarea, select'); 
-
-      inputs.forEach(input => { 
-
-        input.style.borderColor = config.secondary_action_color || defaultConfig.secondary_action_color; 
-
-        input.style.color = config.text_color || defaultConfig.text_color; 
-
-        input.style.fontSize = `${baseFontSize}px`; 
-
-      }); 
-
- 
-
-      const submitButtons = document.querySelectorAll('#create-submit-btn, #redeem-submit-btn'); 
-
-      submitButtons.forEach(btn => { 
-
-        btn.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color; 
-
-        btn.style.color = '#ffffff'; 
-
-      }); 
-
- 
-
-      const cancelButtons = document.querySelectorAll('#create-cancel-btn, #redeem-cancel-btn'); 
-
-      cancelButtons.forEach(btn => { 
-
-        btn.style.backgroundColor = config.secondary_action_color || defaultConfig.secondary_action_color; 
-
-        btn.style.color = '#ffffff'; 
-
-      }); 
-
- 
-
-      // Style menu buttons 
-
-      const menuButtons = document.querySelectorAll('#nav-home, #nav-vouchers, #nav-create, #nav-redeem, #mobile-nav-home, #mobile-nav-vouchers, #mobile-nav-create, #mobile-nav-redeem'); 
-
-      menuButtons.forEach(btn => { 
-
-        btn.style.color = config.text_color || defaultConfig.text_color; 
-
-      }); 
-
- 
-
-      const mobileMenuBtn = document.getElementById('mobile-menu-btn'); 
-
-      mobileMenuBtn.style.color = config.text_color || defaultConfig.text_color; 
-
- 
-
-      renderVouchers(); 
-
-    } 
-
- 
-
-    const dataHandler = { 
-
-      onDataChanged(data) { 
-
-        vouchers = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); 
-
-        renderVouchers(); 
-
-      } 
-
-    }; 
-
- 
-
-    async function init() { 
-
-      if (window.dataSdk) { 
-
-        const initResult = await window.dataSdk.init(dataHandler); 
-
-        if (!initResult.isOk) { 
-
-          showToast('Fehler beim Laden der Daten', 'error'); 
-
-        } 
-
-      } 
-
- 
-
-      if (window.elementSdk) { 
-
-        window.elementSdk.init({ 
-
-          defaultConfig, 
-
-          onConfigChange, 
-
-          mapToCapabilities: (config) => ({ 
-
-            recolorables: [ 
-
-              { 
-
-                get: () => config.background_color || defaultConfig.background_color, 
-
-                set: (value) => { 
-
-                  config.background_color = value; 
-
-                  window.elementSdk.setConfig({ background_color: value }); 
-
-                } 
-
-              }, 
-
-              { 
-
-                get: () => config.card_color || defaultConfig.card_color, 
-
-                set: (value) => { 
-
-                  config.card_color = value; 
-
-                  window.elementSdk.setConfig({ card_color: value }); 
-
-                } 
-
-              }, 
-
-              { 
-
-                get: () => config.text_color || defaultConfig.text_color, 
-
-                set: (value) => { 
-
-                  config.text_color = value; 
-
-                  window.elementSdk.setConfig({ text_color: value }); 
-
-                } 
-
-              }, 
-
-              { 
-
-                get: () => config.primary_action_color || defaultConfig.primary_action_color, 
-
-                set: (value) => { 
-
-                  config.primary_action_color = value; 
-
-                  window.elementSdk.setConfig({ primary_action_color: value }); 
-
-                } 
-
-              }, 
-
-              { 
-
-                get: () => config.secondary_action_color || defaultConfig.secondary_action_color, 
-
-                set: (value) => { 
-
-                  config.secondary_action_color = value; 
-
-                  window.elementSdk.setConfig({ secondary_action_color: value }); 
-
-                } 
-
-              } 
-
-            ], 
-
-            borderables: [], 
-
-            fontEditable: { 
-
-              get: () => config.font_family || defaultConfig.font_family, 
-
-              set: (value) => { 
-
-                config.font_family = value; 
-
-                window.elementSdk.setConfig({ font_family: value }); 
-
-              } 
-
-            }, 
-
-            fontSizeable: { 
-
-              get: () => config.font_size || defaultConfig.font_size, 
-
-              set: (value) => { 
-
-                config.font_size = value; 
-
-                window.elementSdk.setConfig({ font_size: value }); 
-
-              } 
-
-            } 
-
-          }), 
-
-          mapToEditPanelValues: (config) => new Map([ 
-
-            ["page_title", config.page_title || defaultConfig.page_title], 
-
-            ["create_button_text", config.create_button_text || defaultConfig.create_button_text], 
-
-            ["redeem_button_text", config.redeem_button_text || defaultConfig.redeem_button_text] 
-
-          ]) 
-
-        }); 
-
-      } 
-
- 
-
-      await onConfigChange(window.elementSdk?.config || defaultConfig); 
-
- 
-
-      // Menu Event Listeners 
-
-      document.getElementById('mobile-menu-btn').addEventListener('click', () => { 
-
-        const mobileMenu = document.getElementById('mobile-menu'); 
-
-        mobileMenu.classList.toggle('hidden'); 
-
-      }); 
-
- 
-
-      // Navigation handlers 
-
-      function scrollToSection(sectionId) { 
-
-        const section = document.getElementById(sectionId); 
-
-        if (section) { 
-
-          section.scrollIntoView({ behavior: 'smooth' }); 
-
-        } 
-
-        // Close mobile menu if open 
-
-        document.getElementById('mobile-menu').classList.add('hidden'); 
-
-      } 
-
- 
-
-      // Desktop menu 
-
-      document.getElementById('nav-home').addEventListener('click', () => scrollToSection('app')); 
-
-      document.getElementById('nav-vouchers').addEventListener('click', () => { 
-
-        const voucherSection = document.querySelector('h2'); 
-
-        if (voucherSection) { 
-
-          voucherSection.scrollIntoView({ behavior: 'smooth' }); 
-
-        } 
-
-        document.getElementById('mobile-menu').classList.add('hidden'); 
-
-      }); 
-
-      document.getElementById('nav-create').addEventListener('click', () => { 
-
-        document.getElementById('create-modal').classList.remove('hidden'); 
-
-        document.getElementById('mobile-menu').classList.add('hidden'); 
-
-      }); 
-
-      document.getElementById('nav-redeem').addEventListener('click', () => { 
-
-        document.getElementById('redeem-modal').classList.remove('hidden'); 
-
-        document.getElementById('mobile-menu').classList.add('hidden'); 
-
-      }); 
-
- 
-
-      // Mobile menu 
-
-      document.getElementById('mobile-nav-home').addEventListener('click', () => scrollToSection('app')); 
-
-      document.getElementById('mobile-nav-vouchers').addEventListener('click', () => { 
-
-        const voucherSection = document.querySelector('h2'); 
-
-        if (voucherSection) { 
-
-          voucherSection.scrollIntoView({ behavior: 'smooth' }); 
-
-        } 
-
-        document.getElementById('mobile-menu').classList.add('hidden'); 
-
-      }); 
-
-      document.getElementById('mobile-nav-create').addEventListener('click', () => { 
-
-        document.getElementById('create-modal').classList.remove('hidden'); 
-
-        document.getElementById('mobile-menu').classList.add('hidden'); 
-
-      }); 
-
-      document.getElementById('mobile-nav-redeem').addEventListener('click', () => { 
-
-        document.getElementById('redeem-modal').classList.remove('hidden'); 
-
-        document.getElementById('mobile-menu').classList.add('hidden'); 
-
-      }); 
-
- 
-
-      // Event Listeners 
-
-      document.getElementById('create-btn').addEventListener('click', () => { 
-
-        document.getElementById('create-modal').classList.remove('hidden'); 
-
-      }); 
-
- 
-
-      document.getElementById('redeem-btn').addEventListener('click', () => { 
-
-        document.getElementById('redeem-modal').classList.remove('hidden'); 
-
-      }); 
-
- 
-
-      document.getElementById('create-modal-backdrop').addEventListener('click', () => { 
-
-        document.getElementById('create-modal').classList.add('hidden'); 
-
-      }); 
-
- 
-
-      document.getElementById('redeem-modal-backdrop').addEventListener('click', () => { 
-
-        document.getElementById('redeem-modal').classList.add('hidden'); 
-
-      }); 
-
- 
-
-      document.getElementById('create-cancel-btn').addEventListener('click', () => { 
-
-        document.getElementById('create-modal').classList.add('hidden'); 
-
-        document.getElementById('create-form').reset(); 
-
-      }); 
-
- 
-
-      document.getElementById('redeem-cancel-btn').addEventListener('click', () => { 
-
-        document.getElementById('redeem-modal').classList.add('hidden'); 
-
-        document.getElementById('redeem-form').reset(); 
-
-      }); 
-
- 
-
-      document.getElementById('registration-form').addEventListener('submit', async (e) => { 
-
-        e.preventDefault(); 
-
-         
-
-        const submitBtn = document.getElementById('register-btn'); 
-
-        submitBtn.disabled = true; 
-
-        submitBtn.textContent = 'Wird registriert...'; 
-
- 
-
-        // Simulate registration process 
-
-        setTimeout(() => { 
-
-          submitBtn.disabled = false; 
-
-          submitBtn.textContent = 'Registrieren'; 
-
-          showToast('Registrierung erfolgreich! Willkommen bei Babsy Partnergutscheinen!'); 
-
-          document.getElementById('registration-form').reset(); 
-
-        }, 1500); 
-
-      }); 
-
- 
-
-      document.getElementById('create-form').addEventListener('submit', async (e) => { 
-
-        e.preventDefault(); 
-
-         
-
-        if (vouchers.length >= 999) { 
-
-          showToast('Maximale Anzahl von 999 Gutscheinen erreicht', 'error'); 
-
-          return; 
-
-        } 
-
- 
-
-        const submitBtn = document.getElementById('create-submit-btn'); 
-
-        submitBtn.disabled = true; 
-
-        submitBtn.textContent = 'Wird erstellt...'; 
-
- 
-
-        const selectedOption = document.getElementById('voucher-partner').value; 
-
-        const [partner, title, description] = selectedOption.split('|'); 
-
-         
-
-        const newVoucher = { 
-
-          id: Date.now().toString(), 
-
-          code: generateVoucherCode(), 
-
-          title: title, 
-
-          description: description, 
-
-          partner: partner, 
-
-          value: title, 
-
-          createdAt: new Date().toISOString(), 
-
-          redeemedAt: '', 
-
-          isRedeemed: false 
-
-        }; 
-
- 
-
-        const result = await window.dataSdk.create(newVoucher); 
-
-         
-
-        submitBtn.disabled = false; 
-
-        submitBtn.textContent = 'Erstellen'; 
-
- 
-
-        if (result.isOk) { 
-
-          showToast('Gutschein erfolgreich erstellt!'); 
-
-          document.getElementById('create-modal').classList.add('hidden'); 
-
-          document.getElementById('create-form').reset(); 
-
-        } else { 
-
-          showToast('Fehler beim Erstellen des Gutscheins', 'error'); 
-
-        } 
-
-      }); 
-
- 
-
-      document.getElementById('redeem-form').addEventListener('submit', async (e) => { 
-
-        e.preventDefault(); 
-
-         
-
-        const code = document.getElementById('redeem-code').value.toUpperCase(); 
-
-        const voucher = vouchers.find(v => v.code === code && !v.isRedeemed); 
-
- 
-
-        const submitBtn = document.getElementById('redeem-submit-btn'); 
-
-        submitBtn.disabled = true; 
-
-        submitBtn.textContent = 'Wird eingelöst...'; 
-
- 
-
-        if (!voucher) { 
-
-          submitBtn.disabled = false; 
-
-          submitBtn.textContent = 'Einlösen'; 
-
-          showToast('Gutschein nicht gefunden oder bereits eingelöst', 'error'); 
-
-          return; 
-
-        } 
-
- 
-
-        const updatedVoucher = { 
-
-          ...voucher, 
-
-          isRedeemed: true, 
-
-          redeemedAt: new Date().toISOString() 
-
-        }; 
-
- 
-
-        const result = await window.dataSdk.update(updatedVoucher); 
-
-         
-
-        submitBtn.disabled = false; 
-
-        submitBtn.textContent = 'Einlösen'; 
-
- 
-
-        if (result.isOk) { 
-
-          showToast('Gutschein erfolgreich eingelöst!'); 
-
-          document.getElementById('redeem-modal').classList.add('hidden'); 
-
-          document.getElementById('redeem-form').reset(); 
-
-        } else { 
-
-          showToast('Fehler beim Einlösen des Gutscheins', 'error'); 
-
-        } 
-
-      }); 
-
-    } 
-
- 
-
-    init(); 
-
-  </script> 
-
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'997c4d52a6efb571',t:'MTc2MjAwOTY0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body> 
-
-</html> 
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Partnergutschein Manager</title>
+  
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    
+    html {
+      height: 100%;
+    }
+    
+    .voucher-card {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .voucher-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .filter-btn {
+      cursor: pointer;
+    }
+    
+    .filter-btn:hover:not(.active) {
+      background: #009fad !important;
+      color: white !important;
+    }
+    
+    .filter-btn.active {
+      background: #009fad !important;
+      color: white !important;
+    }
+  </style>
+  
+  <style>@view-transition { navigation: auto; }</style>
+</head>
+
+<body>
+  <div id="app" class="min-h-full flex flex-col">
+    <!-- Header -->
+    <header class="shadow-sm">
+      <div class="max-w-6xl mx-auto px-6 py-4">
+        <div class="flex justify-between items-center">
+          <h1 id="page-title" class="text-3xl font-bold">Babsy Partnergutscheine</h1>
+          
+          <!-- Desktop Menu -->
+          <nav class="hidden md:flex space-x-6">
+            <button id="nav-home" class="px-4 py-2 rounded-lg font-medium transition-colors">
+              🏠 Startseite
+            </button>
+            <button id="nav-vouchers" class="px-4 py-2 rounded-lg font-medium transition-colors">
+              🎫 Meine Gutscheine
+            </button>
+            <button id="nav-create" class="px-4 py-2 rounded-lg font-medium transition-colors">
+              ✨ Erstellen
+            </button>
+            <button id="nav-redeem" class="px-4 py-2 rounded-lg font-medium transition-colors">
+              🎁 Einlösen
+            </button>
+          </nav>
+          
+          <!-- Mobile Menu Button -->
+          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <nav id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
+          <button id="mobile-nav-home" class="w-full text-left px-4 py-2 rounded-lg font-medium transition-colors">
+            🏠 Startseite
+          </button>
+          <button id="mobile-nav-vouchers" class="w-full text-left px-4 py-2 rounded-lg font-medium transition-colors">
+            🎫 Meine Gutscheine
+          </button>
+          <button id="mobile-nav-create" class="w-full text-left px-4 py-2 rounded-lg font-medium transition-colors">
+            ✨ Erstellen
+          </button>
+          <button id="mobile-nav-redeem" class="w-full text-left px-4 py-2 rounded-lg font-medium transition-colors">
+            🎁 Einlösen
+          </button>
+        </nav>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="flex-1 max-w-6xl mx-auto px-6 py-8 w-full">
+      <!-- Registration Form -->
+      <div class="mb-8 p-6 rounded-lg shadow-md" style="background-color: #ffffff">
+        <h2 class="text-2xl font-bold mb-4">Registrierung für Partnergutscheine</h2>
+        <form id="registration-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="first-name" class="block font-semibold mb-2">Vorname *</label>
+            <input type="text" id="first-name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2">
+          </div>
+          <div>
+            <label for="last-name" class="block font-semibold mb-2">Nachname *</label>
+            <input type="text" id="last-name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2">
+          </div>
+          <div class="md:col-span-2">
+            <label for="email" class="block font-semibold mb-2">E-Mail-Adresse *</label>
+            <input type="email" id="email" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2">
+          </div>
+          <div class="md:col-span-2 space-y-3">
+            <div class="flex items-center">
+              <input type="checkbox" id="app-user" class="mr-3 w-4 h-4">
+              <label for="app-user" class="font-medium">Ich bin App-User</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="club-member" class="mr-3 w-4 h-4">
+              <label for="club-member" class="font-medium">Ich bin Vereinsmitglied</label>
+            </div>
+            <div class="flex items-start">
+              <input type="checkbox" id="newsletter" required class="mr-3 w-4 h-4 mt-1">
+              <label for="newsletter" class="font-medium">
+                Ich stimme dem Erhalt des Newsletters zu. Dies ist eine Bedingung für die Nutzung der Plattform. *
+              </label>
+            </div>
+          </div>
+          <div class="md:col-span-2">
+            <button type="submit" id="register-btn" class="w-full px-6 py-3 rounded-lg font-semibold transition-colors">
+              Registrieren
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex gap-4 mb-8">
+        <button id="create-btn" class="px-6 py-3 rounded-lg font-semibold transition-colors">
+          ✨ Gutschein erstellen
+        </button>
+        <button id="redeem-btn" class="px-6 py-3 rounded-lg font-semibold transition-colors">
+          🎁 Gutschein einlösen
+        </button>
+      </div>
+      
+      <!-- Statistiken -->
+      <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-lg shadow-md text-center">
+          <i class="fas fa-ticket-alt text-2xl mb-2" style="color: #a71a80"></i>
+          <div class="text-2xl font-bold" id="totalCount">0</div>
+          <div class="text-sm text-gray-600">Gesamt</div>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md text-center">
+          <i class="fas fa-check-circle text-2xl mb-2" style="color: #10b981"></i>
+          <div class="text-2xl font-bold" id="activeCount">0</div>
+          <div class="text-sm text-gray-600">Aktiv</div>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md text-center">
+          <i class="fas fa-times-circle text-2xl mb-2" style="color: #6b7280"></i>
+          <div class="text-2xl font-bold" id="redeemedCount">0</div>
+          <div class="text-sm text-gray-600">Eingelöst</div>
+        </div>
+      </div>
+      
+      <!-- Filter -->
+      <div class="mb-6 flex gap-2 flex-wrap">
+        <button class="filter-btn active px-4 py-2 rounded-full border-2 font-semibold transition-colors" 
+                data-filter="all" style="border-color: #009fad; background: #009fad; color: white">
+          <i class="fas fa-list"></i> Alle
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-full border-2 font-semibold transition-colors" 
+                data-filter="active" style="border-color: #009fad; color: #009fad; background: white">
+          <i class="fas fa-check-circle"></i> Aktiv
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-full border-2 font-semibold transition-colors" 
+                data-filter="redeemed" style="border-color: #009fad; color: #009fad; background: white">
+          <i class="fas fa-times-circle"></i> Eingelöst
+        </button>
+      </div>
+      
+      <!-- Voucher List -->
+      <div>
+        <h2 class="text-2xl font-bold mb-4">Meine Gutscheine</h2>
+        <div id="voucher-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Vouchers will be rendered here -->
+        </div>
+        <div id="empty-state" class="text-center py-12 hidden">
+          <div class="text-6xl mb-4">🎫</div>
+          <p class="text-xl mb-2">Noch keine Gutscheine</p>
+          <p>Erstelle deinen ersten Gutschein!</p>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Create Modal -->
+    <div id="create-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black bg-opacity-50" id="create-modal-backdrop"></div>
+      <div class="relative rounded-lg shadow-xl max-w-md w-full p-6">
+        <h3 class="text-2xl font-bold mb-4">Neuen Gutschein erstellen</h3>
+        <form id="create-form">
+          <div class="mb-6">
+            <label for="voucher-partner" class="block font-semibold mb-2">Gutschein auswählen</label>
+            <select id="voucher-partner" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white">
+              <option value="">Bitte Gutschein auswählen...</option>
+              <option value="Restaurant Bella Vista|Abendessen für 2 Personen|Genießen Sie ein romantisches 3-Gänge-Menü">🍽️ Restaurant Bella Vista - Abendessen für 2 Personen</option>
+              <option value="Wellness Oase|60 Min Entspannungsmassage|Lassen Sie sich bei einer wohltuenden Ganzkörpermassage verwöhnen">💆‍♀️ Wellness Oase - 60 Min Entspannungsmassage</option>
+              <option value="Kino Metropol|2 Kinokarten + Popcorn|Erleben Sie die neuesten Blockbuster mit Snacks">🎬 Kino Metropol - 2 Kinokarten + Popcorn</option>
+              <option value="Fitness Studio Power|1 Monat Mitgliedschaft|Trainieren Sie einen Monat kostenlos in unserem Studio">💪 Fitness Studio Power - 1 Monat Mitgliedschaft</option>
+              <option value="Café Gemütlich|Kaffee &amp; Kuchen für 2|Genießen Sie hausgemachten Kuchen mit frischem Kaffee">☕ Café Gemütlich - Kaffee &amp; Kuchen für 2</option>
+              <option value="Buchhandlung Lesezeit|Büchergutschein 25€|Stöbern Sie in unserem Sortiment und wählen Sie Ihre Lieblingsbücher">📚 Buchhandlung Lesezeit - Büchergutschein 25€</option>
+              <option value="Friseur Schönheit|Waschen, Schneiden, Föhnen|Lassen Sie sich von unserem Profi-Team verwöhnen">✂️ Friseur Schönheit - Waschen, Schneiden, Föhnen</option>
+              <option value="Blumen Paradies|Blumenstrauß nach Wahl|Überraschen Sie Ihre Liebsten mit einem frischen Blumenstrauß">🌸 Blumen Paradies - Blumenstrauß nach Wahl</option>
+              <option value="Bäckerei Goldkruste|Frühstück für 2 Personen|Starten Sie den Tag mit frischen Backwaren und Kaffee">🥖 Bäckerei Goldkruste - Frühstück für 2 Personen</option>
+              <option value="Apotheke Gesundheit|Beratung + Wellness-Paket|Professionelle Beratung mit hochwertigen Wellness-Produkten">💊 Apotheke Gesundheit - Beratung + Wellness-Paket</option>
+            </select>
+          </div>
+          <div class="flex gap-3">
+            <button type="submit" id="create-submit-btn" class="flex-1 px-6 py-3 rounded-lg font-semibold transition-colors">
+              Gutschein erstellen
+            </button>
+            <button type="button" id="create-cancel-btn" class="flex-1 px-6 py-3 rounded-lg font-semibold transition-colors">
+              Abbrechen
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Redeem Modal -->
+    <div id="redeem-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black bg-opacity-50" id="redeem-modal-backdrop"></div>
+      <div class="relative rounded-lg shadow-xl max-w-md w-full p-6">
+        <h3 class="text-2xl font-bold mb-4">Gutschein einlösen</h3>
+        <form id="redeem-form">
+          <div class="mb-6">
+            <label for="redeem-code" class="block font-semibold mb-2">Gutschein-Code</label>
+            <input type="text" id="redeem-code" required placeholder="XXXX-XXXX" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 uppercase">
+          </div>
+          <div class="flex gap-3">
+            <button type="submit" id="redeem-submit-btn" class="flex-1 px-6 py-3 rounded-lg font-semibold transition-colors">
+              Einlösen
+            </button>
+            <button type="button" id="redeem-cancel-btn" class="flex-1 px-6 py-3 rounded-lg font-semibold transition-colors">
+              Abbrechen
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- E-Mail Modal -->
+    <div class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4" id="emailModal">
+      <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeEmailModal()"></div>
+      <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        <h2 class="text-2xl font-bold mb-4">
+          <i class="fas fa-envelope"></i> Gutschein per E-Mail versenden
+        </h2>
+        <form id="emailForm">
+          <div class="mb-4">
+            <label for="recipientEmail" class="block font-semibold mb-2">E-Mail-Adresse des Empfängers</label>
+            <input type="email" id="recipientEmail" required class="w-full px-4 py-2 border rounded-lg" placeholder="beispiel@email.com">
+          </div>
+          <div class="mb-4">
+            <label for="senderName" class="block font-semibold mb-2">Ihr Name (optional)</label>
+            <input type="text" id="senderName" class="w-full px-4 py-2 border rounded-lg" placeholder="Max Mustermann">
+          </div>
+          <div class="flex gap-3">
+            <button type="submit" class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold">
+              <i class="fas fa-paper-plane"></i> Senden
+            </button>
+            <button type="button" onclick="closeEmailModal()" class="flex-1 px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold">
+              Abbrechen
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const defaultConfig = {
+      background_color: "#f3f4f6",
+      card_color: "#ffffff",
+      text_color: "#1f2937",
+      primary_action_color: "#a71a80",
+      secondary_action_color: "#009fad",
+      page_title: "Babsy Partnergutscheine",
+      create_button_text: "Gutschein erstellen",
+      redeem_button_text: "Gutschein einlösen",
+      font_family: "system-ui",
+      font_size: 16
+    };
+
+    let vouchers = [];
+    let currentFilter = 'all';
+    let selectedVoucher = null;
+
+    function generateVoucherCode() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 8; i++) {
+        if (i === 4) code += '-';
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.style.backgroundColor = type === 'success' ? '#a71a80' : '#dc2626';
+      toast.style.color = '#ffffff';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function updateStats() {
+      const total = vouchers.length;
+      const active = vouchers.filter(v => !v.isRedeemed).length;
+      const redeemed = vouchers.filter(v => v.isRedeemed).length;
+      
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('activeCount').textContent = active;
+      document.getElementById('redeemedCount').textContent = redeemed;
+    }
+
+    function renderVouchers() {
+      const voucherList = document.getElementById('voucher-list');
+      const emptyState = document.getElementById('empty-state');
+      const config = window.elementSdk?.config || defaultConfig;
+
+      // Filter anwenden
+      let filteredVouchers = vouchers;
+      if (currentFilter === 'active') {
+        filteredVouchers = vouchers.filter(v => !v.isRedeemed);
+      } else if (currentFilter === 'redeemed') {
+        filteredVouchers = vouchers.filter(v => v.isRedeemed);
+      }
+
+      if (filteredVouchers.length === 0) {
+        voucherList.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        emptyState.style.color = config.text_color || defaultConfig.text_color;
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      voucherList.innerHTML = filteredVouchers.map(voucher => `
+        <div class="voucher-card rounded-lg shadow-md p-6" style="background-color: ${config.card_color || defaultConfig.card_color}">
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="text-xl font-bold" style="color: ${config.text_color || defaultConfig.text_color}">${voucher.title}</h3>
+            <span class="px-3 py-1 rounded-full text-sm font-semibold" style="background-color: ${voucher.isRedeemed ? '#fed7d7' : '#d1fae5'}; color: ${voucher.isRedeemed ? '#991b1b' : '#166534'}">
+              ${voucher.isRedeemed ? '✓ Eingelöst' : '● Aktiv'}
+            </span>
+          </div>
+          <p class="mb-3" style="color: ${config.text_color || defaultConfig.text_color}">${voucher.description}</p>
+          <div class="mb-3 p-3 rounded" style="background-color: ${config.background_color || defaultConfig.background_color}">
+            <p class="text-sm font-semibold mb-1" style="color: ${config.text_color || defaultConfig.text_color}">Partner:</p>
+            <p class="font-bold" style="color: ${config.secondary_action_color || defaultConfig.secondary_action_color}">${voucher.partner}</p>
+          </div>
+          <div class="mb-4 p-3 rounded border-2 border-dashed" style="border-color: ${config.secondary_action_color || defaultConfig.secondary_action_color}">
+            <p class="text-sm font-semibold mb-1" style="color: ${config.text_color || defaultConfig.text_color}">Code:</p>
+            <p class="font-mono font-bold text-lg" style="color: ${config.text_color || defaultConfig.text_color}">${voucher.code}</p>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="flex gap-2 mt-4 flex-wrap">
+            ${!voucher.isRedeemed ? `
+              <button onclick="openEmailModal('${voucher.id}')" class="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-semibold transition-colors">
+                <i class="fas fa-envelope"></i> E-Mail
+              </button>
+              <button onclick="quickRedeem('${voucher.code}')" class="flex-1 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm font-semibold transition-colors">
+                <i class="fas fa-check"></i> Einlösen
+              </button>
+            ` : ''}
+            <button onclick="deleteVoucher('${voucher.id}')" class="flex-1 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded text-sm font-semibold transition-colors">
+              <i class="fas fa-trash"></i> Löschen
+            </button>
+          </div>
+          
+          ${voucher.isRedeemed ? `<p class="text-sm mt-2" style="color: ${config.secondary_action_color || defaultConfig.secondary_action_color}">Eingelöst am: ${new Date(voucher.redeemedAt).toLocaleDateString('de-DE')}</p>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function openEmailModal(voucherId) {
+      selectedVoucher = vouchers.find(v => v.id === voucherId);
+      document.getElementById('emailModal').classList.remove('hidden');
+    }
+
+    function closeEmailModal() {
+      document.getElementById('emailModal').classList.add('hidden');
+      document.getElementById('emailForm').reset();
+      selectedVoucher = null;
+    }
+
+    async function deleteVoucher(voucherId) {
+      if (!confirm('Möchten Sie diesen Gutschein wirklich löschen?')) return;
+      
+      const voucher = vouchers.find(v => v.id === voucherId);
+      if (voucher) {
+        const result = await window.dataSdk.delete(voucher);
+        if (result.isOk) {
+          showToast('Gutschein erfolgreich gelöscht');
+        } else {
+          showToast('Fehler beim Löschen des Gutscheins', 'error');
+        }
+      }
+    }
+
+    async function quickRedeem(code) {
+      const voucher = vouchers.find(v => v.code === code && !v.isRedeemed);
+      if (!voucher) {
+        showToast('Gutschein nicht gefunden oder bereits eingelöst', 'error');
+        return;
+      }
+      
+      const updatedVoucher = {
+        ...voucher,
+        isRedeemed: true,
+        redeemedAt: new Date().toISOString()
+      };
+      
+      const result = await window.dataSdk.update(updatedVoucher);
+      if (result.isOk) {
+        showToast('Gutschein erfolgreich eingelöst!');
+      } else {
+        showToast('Fehler beim Einlösen des Gutscheins', 'error');
+      }
+    }
+
+    async function onConfigChange(config) {
+      const baseFont = config.font_family || defaultConfig.font_family;
+      const baseFontSize = config.font_size || defaultConfig.font_size;
+      const fontStack = `${baseFont}, system-ui, -apple-system, sans-serif`;
+
+      document.body.style.backgroundColor = config.background_color || defaultConfig.background_color;
+      document.body.style.fontFamily = fontStack;
+      document.body.style.fontSize = `${baseFontSize}px`;
+      document.body.style.color = config.text_color || defaultConfig.text_color;
+
+      document.querySelector('header').style.backgroundColor = config.card_color || defaultConfig.card_color;
+      document.getElementById('page-title').textContent = config.page_title || defaultConfig.page_title;
+      document.getElementById('page-title').style.color = config.text_color || defaultConfig.text_color;
+      document.getElementById('page-title').style.fontSize = `${baseFontSize * 2}px`;
+
+      const h2Elements = document.querySelectorAll('h2');
+      h2Elements.forEach(h2 => {
+        h2.style.color = config.text_color || defaultConfig.text_color;
+        h2.style.fontSize = `${baseFontSize * 1.5}px`;
+      });
+
+      const createBtn = document.getElementById('create-btn');
+      createBtn.textContent = `✨ ${config.create_button_text || defaultConfig.create_button_text}`;
+      createBtn.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color;
+      createBtn.style.color = '#ffffff';
+
+      const redeemBtn = document.getElementById('redeem-btn');
+      redeemBtn.textContent = `🎁 ${config.redeem_button_text || defaultConfig.redeem_button_text}`;
+      redeemBtn.style.backgroundColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+      redeemBtn.style.color = '#ffffff';
+
+      const registerBtn = document.getElementById('register-btn');
+      registerBtn.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color;
+      registerBtn.style.color = '#ffffff';
+
+      const modals = document.querySelectorAll('#create-modal > div:last-child, #redeem-modal > div:last-child');
+      modals.forEach(modal => {
+        modal.style.backgroundColor = config.card_color || defaultConfig.card_color;
+      });
+
+      const modalTitles = document.querySelectorAll('#create-modal h3, #redeem-modal h3');
+      modalTitles.forEach(title => {
+        title.style.color = config.text_color || defaultConfig.text_color;
+        title.style.fontSize = `${baseFontSize * 1.5}px`;
+      });
+
+      const labels = document.querySelectorAll('label');
+      labels.forEach(label => {
+        label.style.color = config.text_color || defaultConfig.text_color;
+        label.style.fontSize = `${baseFontSize}px`;
+      });
+
+      const inputs = document.querySelectorAll('input, textarea, select');
+      inputs.forEach(input => {
+        input.style.borderColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+        input.style.color = config.text_color || defaultConfig.text_color;
+        input.style.fontSize = `${baseFontSize}px`;
+      });
+
+      const submitButtons = document.querySelectorAll('#create-submit-btn, #redeem-submit-btn');
+      submitButtons.forEach(btn => {
+        btn.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color;
+        btn.style.color = '#ffffff';
+      });
+
+      const cancelButtons = document.querySelectorAll('#create-cancel-btn, #redeem-cancel-btn');
+      cancelButtons.forEach(btn => {
+        btn.style.backgroundColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+        btn.style.color = '#ffffff';
+      });
+
+      const menuButtons = document.querySelectorAll('#nav-home, #nav-vouchers, #nav-create, #nav-redeem, #mobile-nav-home, #mobile-nav-vouchers, #mobile-nav-create, #mobile-nav-redeem');
+      menuButtons.forEach(btn => {
+        btn.style.color = config.text_color || defaultConfig.text_color;
+      });
+
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      mobileMenuBtn.style.color = config.text_color || defaultConfig.text_color;
+
+      renderVouchers();
+    }
+
+    const dataHandler = {
+      onDataChanged(data) {
+        vouchers = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        updateStats();
+        renderVouchers();
+      }
+    };
+
+    async function init() {
+      if (window.dataSdk) {
+        const initResult = await window.dataSdk.init(dataHandler);
+        if (!initResult.isOk) {
+          showToast('Fehler beim Laden der Daten', 'error');
+        }
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  config.background_color = value;
+                  window.elementSdk.setConfig({ background_color: value });
+                }
+              },
+              {
+                get: () => config.card_color || defaultConfig.card_color,
+                set: (value) => {
+                  config.card_color = value;
+                  window.elementSdk.setConfig({ card_color: value });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  config.text_color = value;
+                  window.elementSdk.setConfig({ text_color: value });
+                }
+              },
+              {
+                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                set: (value) => {
+                  config.primary_action_color = value;
+                  window.elementSdk.setConfig({ primary_action_color: value });
+                }
+              },
+              {
+                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                set: (value) => {
+                  config.secondary_action_color = value;
+                  window.elementSdk.setConfig({ secondary_action_color: value });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                config.font_family = value;
+                window.elementSdk.setConfig({ font_family: value });
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                config.font_size = value;
+                window.elementSdk.setConfig({ font_size: value });
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["page_title", config.page_title || defaultConfig.page_title],
+            ["create_button_text", config.create_button_text || defaultConfig.create_button_text],
+            ["redeem_button_text", config.redeem_button_text || defaultConfig.redeem_button_text]
+          ])
+        });
+      }
+
+      await onConfigChange(window.elementSdk?.config || defaultConfig);
+
+      // Filter Event Listeners
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active');
+            b.style.background = 'white';
+            b.style.color = '#009fad';
+          });
+          btn.classList.add('active');
+          btn.style.background = '#009fad';
+          btn.style.color = 'white';
+          currentFilter = btn.dataset.filter;
+          renderVouchers();
+        });
+      });
+
+      // E-Mail Form Event Listener
+      document.getElementById('emailForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const recipientEmail = document.getElementById('recipientEmail').value;
+        const senderName = document.getElementById('senderName').value;
+        
+        if (!selectedVoucher) {
+          showToast('Kein Gutschein ausgewählt', 'error');
+          return;
+        }
+        
+        // Hier würde normalerweise der E-Mail-Service integriert
+        showToast(`E-Mail wird an ${recipientEmail} gesendet...`);
+        closeEmailModal();
+      });
+
+      // Menu Event Listeners
+      document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      // Navigation handlers
+      function scrollToSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth' });
+        }
+        document.getElementById('mobile-menu').classList.add('hidden');
+      }
+
+      // Desktop menu
+      document.getElementById('nav-home').addEventListener('click', () => scrollToSection('app'));
+      document.getElementById('nav-vouchers').addEventListener('click', () => {
+        const voucherSection = document.querySelector('h2');
+        if (voucherSection) {
+          voucherSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        document.getElementById('mobile-menu').classList.add('hidden');
+      });
+      document.getElementById('nav-create').addEventListener('click', () => {
+        document.getElementById('create-modal').classList.remove('hidden');
+        document.getElementById('mobile-menu').classList.add('hidden');
+      });
+      document.getElementById('nav-redeem').addEventListener('click', () => {
+        document.getElementById('redeem-modal').classList.remove('hidden');
+        document.getElementById('mobile-menu').classList.add('hidden');
+      });
+
+      // Mobile menu
+      document.getElementById('mobile-nav-home').addEventListener('click', () => scrollToSection('app'));
+      document.getElementById('mobile-nav-vouchers').addEventListener('click', () => {
+        const voucherSection = document.querySelector('h2');
+        if (voucherSection) {
+          voucherSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        document.getElementById('mobile-menu').classList.add('hidden');
+      });
+      document.getElementById('mobile-nav-create').addEventListener('click', () => {
+        document.getElementById('create-modal').classList.remove('hidden');
+        document.getElementById('mobile-menu').classList.add('hidden');
+      });
+      document.getElementById('mobile-nav-redeem').addEventListener('click', () => {
+        document.getElementById('redeem-modal').classList.remove('hidden');
+        document.getElementById('mobile-menu').classList.add('hidden');
+      });
+
+      // Event Listeners
+      document.getElementById('create-btn').addEventListener('click', () => {
+        document.getElementById('create-modal').classList.remove('hidden');
+      });
+
+      document.getElementById('redeem-btn').addEventListener('click', () => {
+        document.getElementById('redeem-modal').classList.remove('hidden');
+      });
+
+      document.getElementById('create-modal-backdrop').addEventListener('click', () => {
+        document.getElementById('create-modal').classList.add('hidden');
+      });
+
+      document.getElementById('redeem-modal-backdrop').addEventListener('click', () => {
+        document.getElementById('redeem-modal').classList.add('hidden');
+      });
+
+      document.getElementById('create-cancel-btn').addEventListener('click', () => {
+        document.getElementById('create-modal').classList.add('hidden');
+        document.getElementById('create-form').reset();
+      });
+
+      document.getElementById('redeem-cancel-btn').addEventListener('click', () => {
+        document.getElementById('redeem-modal').classList.add('hidden');
+        document.getElementById('redeem-form').reset();
+      });
+
+      document.getElementById('registration-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('register-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Wird registriert...';
+
+        // Simulate registration process
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Registrieren';
+          showToast('Registrierung erfolgreich! Willkommen bei Babsy Partnergutscheinen!');
+          document.getElementById('registration-form').reset();
+        }, 1500);
+      });
+
+      document.getElementById('create-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (vouchers.length >= 999) {
+          showToast('Maximale Anzahl von 999 Gutscheinen erreicht', 'error');
+          return;
+        }
+
+        const submitBtn = document.getElementById('create-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Wird erstellt...';
+
+        const selectedOption = document.getElementById('voucher-partner').value;
+        const [partner, title, description] = selectedOption.split('|');
+        
+        const newVoucher = {
+          id: Date.now().toString(),
+          code: generateVoucherCode(),
+          title: title,
+          description: description,
+          partner: partner,
+          value: title,
+          createdAt: new Date().toISOString(),
+          redeemedAt: '',
+          isRedeemed: false
+        };
+
+        const result = await window.dataSdk.create(newVoucher);
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Gutschein erstellen';
+
+        if (result.isOk) {
+          showToast('Gutschein erfolgreich erstellt!');
+          document.getElementById('create-modal').classList.add('hidden');
+          document.getElementById('create-form').reset();
+        } else {
+          showToast('Fehler beim Erstellen des Gutscheins', 'error');
+        }
+      });
+
+      document.getElementById('redeem-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const code = document.getElementById('redeem-code').value.toUpperCase();
+        const voucher = vouchers.find(v => v.code === code && !v.isRedeemed);
+
+        const submitBtn = document.getElementById('redeem-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Wird eingelöst...';
+
+        if (!voucher) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Einlösen';
+          showToast('Gutschein nicht gefunden oder bereits eingelöst', 'error');
+          return;
+        }
+
+        const updatedVoucher = {
+          ...voucher,
+          isRedeemed: true,
+          redeemedAt: new Date().toISOString()
+        };
+
+        const result = await window.dataSdk.update(updatedVoucher);
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Einlösen';
+
+        if (result.isOk) {
+          showToast('Gutschein erfolgreich eingelöst!');
+          document.getElementById('redeem-modal').classList.add('hidden');
+          document.getElementById('redeem-form').reset();
+        } else {
+          showToast('Fehler beim Einlösen des Gutscheins', 'error');
+        }
+      });
+    }
+
+    // Globale Funktionen für onclick-Handler
+    window.openEmailModal = openEmailModal;
+    window.closeEmailModal = closeEmailModal;
+    window.deleteVoucher = deleteVoucher;
+    window.quickRedeem = quickRedeem;
+
+    init();
+  </script>
+
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'997c4d52a6efb571',t:'MTc2MjAwOTY0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>
