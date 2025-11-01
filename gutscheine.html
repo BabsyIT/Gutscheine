@@ -511,6 +511,7 @@
         <div class="page-header">
             <h1><i class="fas fa-gift"></i> Meine Gutscheine</h1>
             <p>Verwalten Sie Ihre Babsy Partnergutscheine</p>
+            <div id="syncStatus" style="margin-top: 10px; font-size: 14px; color: #666;"></div>
         </div>
 
         <!-- Statistics -->
@@ -544,6 +545,9 @@
                 <i class="fas fa-times-circle"></i> Eingelöst
             </button>
             <div style="flex-grow: 1;"></div>
+            <button class="filter-btn" onclick="exportLocalVouchers()" style="background: var(--secondary-color); color: white; border-color: var(--secondary-color);" title="Exportiert lokale Gutscheine zum manuellen Sync">
+                <i class="fas fa-download"></i> Export
+            </button>
             <button class="filter-btn" onclick="addDemoData()" style="background: var(--primary-color); color: white; border-color: var(--primary-color);">
                 <i class="fas fa-plus"></i> Demo-Daten laden
             </button>
@@ -617,10 +621,48 @@
         let selectedVoucher = null;
         let html5QrcodeScanner = null;
 
-        // Load vouchers from localStorage
-        function loadVouchers() {
-            const stored = localStorage.getItem('babsy_vouchers');
-            vouchers = stored ? JSON.parse(stored) : [];
+        // Load vouchers from BOTH localStorage AND central database
+        async function loadVouchers() {
+            const syncStatusEl = document.getElementById('syncStatus');
+
+            try {
+                // Load from central database
+                const response = await fetch('data/vouchers.json');
+                const centralData = await response.json();
+
+                // Load from localStorage
+                const localStored = localStorage.getItem('babsy_vouchers');
+                const localVouchers = localStored ? JSON.parse(localStored) : [];
+
+                // Merge: Central vouchers + local-only vouchers
+                const centralIds = new Set(centralData.vouchers.map(v => v.id));
+                const localOnlyVouchers = localVouchers.filter(v => !centralIds.has(v.id));
+
+                // Combined list
+                vouchers = [...centralData.vouchers, ...localOnlyVouchers];
+
+                console.log(`📊 Gutscheine geladen: ${centralData.vouchers.length} zentral, ${localOnlyVouchers.length} nur lokal`);
+
+                // Show sync status
+                const hasPendingSync = localStorage.getItem('babsy_vouchers_pending_sync') === 'true';
+                if (localOnlyVouchers.length > 0 || hasPendingSync) {
+                    syncStatusEl.innerHTML = `<i class="fas fa-sync-alt"></i> ${localOnlyVouchers.length} lokale Änderung(en) | Sync zur zentralen DB ausstehend`;
+                    syncStatusEl.style.color = '#f59e0b';
+                } else {
+                    syncStatusEl.innerHTML = `<i class="fas fa-check-circle"></i> Mit zentraler Datenbank synchronisiert`;
+                    syncStatusEl.style.color = '#10b981';
+                }
+
+            } catch (error) {
+                console.warn('⚠️ Zentrale Datenbank nicht erreichbar, verwende nur localStorage:', error);
+                // Fallback: nur localStorage
+                const stored = localStorage.getItem('babsy_vouchers');
+                vouchers = stored ? JSON.parse(stored) : [];
+
+                syncStatusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Offline-Modus - Nur lokale Gutscheine`;
+                syncStatusEl.style.color = '#ef4444';
+            }
+
             updateStats();
             renderVouchers();
         }
@@ -780,7 +822,7 @@
             });
         }
 
-        function onScanSuccess(decodedText, decodedResult) {
+        async function onScanSuccess(decodedText, decodedResult) {
             // Stop scanning
             if (html5QrcodeScanner) {
                 html5QrcodeScanner.stop();
@@ -799,10 +841,13 @@
                         <small>Partner: ${qrData.partner}</small>
                     `;
 
-                    // Redeem voucher
+                    // Redeem voucher in memory
                     selectedVoucher.isRedeemed = true;
                     selectedVoucher.redeemedAt = new Date().toISOString();
-                    localStorage.setItem('babsy_vouchers', JSON.stringify(vouchers));
+                    selectedVoucher.redeemedBy = qrData.partner;
+
+                    // Save to BOTH localStorage AND queue for central sync
+                    await saveVoucherChanges();
 
                     // Close scanner after 2 seconds
                     setTimeout(() => {
@@ -861,30 +906,71 @@
                   `Hinweis: Nutzen Sie diesen Code nur einmal.`);
         }
 
+        // Save voucher changes to both localStorage and prepare for central sync
+        async function saveVoucherChanges() {
+            // Always save to localStorage for offline capability
+            localStorage.setItem('babsy_vouchers', JSON.stringify(vouchers));
+
+            // Mark that there are pending changes for central sync
+            localStorage.setItem('babsy_vouchers_pending_sync', 'true');
+
+            console.log('💾 Gutscheine lokal gespeichert, Sync zur zentralen DB ausstehend');
+
+            // In a real implementation, this would trigger a GitHub Action or API call
+            // For demo purposes, we show that the change is tracked
+            return true;
+        }
+
+        // Export local vouchers for manual sync (Demo Helper)
+        function exportLocalVouchers() {
+            const dataToExport = {
+                vouchers: vouchers,
+                lastUpdated: new Date().toISOString(),
+                stats: {
+                    total: vouchers.length,
+                    active: vouchers.filter(v => !v.isRedeemed).length,
+                    redeemed: vouchers.filter(v => v.isRedeemed).length
+                }
+            };
+
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'vouchers.json';
+            link.click();
+            URL.revokeObjectURL(url);
+
+            console.log('📥 Lokale Gutscheine exportiert - kann manuell in data/vouchers.json hochgeladen werden');
+            alert('Lokale Gutscheine wurden als vouchers.json exportiert.\n\nFür die Demo:\n1. Laden Sie die Datei herunter\n2. Ersetzen Sie damit data/vouchers.json\n3. Commiten und pushen Sie die Änderung\n\nDies simuliert die zentrale Synchronisation.');
+        }
+
         // Redeem voucher (manual - for demo/testing)
-        function redeemVoucher(voucherId) {
+        async function redeemVoucher(voucherId) {
             if (confirm('Möchten Sie diesen Gutschein manuell einlösen? (Normalerweise über QR-Code Scanner)')) {
                 const voucher = vouchers.find(v => v.id === voucherId);
                 if (voucher) {
                     voucher.isRedeemed = true;
                     voucher.redeemedAt = new Date().toISOString();
-                    localStorage.setItem('babsy_vouchers', JSON.stringify(vouchers));
+                    voucher.redeemedBy = 'Manual';
+                    await saveVoucherChanges();
                     loadVouchers();
                 }
             }
         }
 
         // Delete voucher
-        function deleteVoucher(voucherId) {
+        async function deleteVoucher(voucherId) {
             if (confirm('Möchten Sie diesen Gutschein wirklich löschen?')) {
                 vouchers = vouchers.filter(v => v.id !== voucherId);
-                localStorage.setItem('babsy_vouchers', JSON.stringify(vouchers));
+                await saveVoucherChanges();
                 loadVouchers();
             }
         }
 
         // Add demo data (for testing)
-        function addDemoData() {
+        async function addDemoData() {
             const demoVouchers = [
                 {
                     id: 'demo-1',
@@ -894,7 +980,8 @@
                     description: '10% Rabatt auf alle Produkte',
                     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: false,
-                    redeemedAt: ''
+                    redeemedAt: '',
+                    customerId: 'demo@babsy.ch'
                 },
                 {
                     id: 'demo-2',
@@ -904,7 +991,8 @@
                     description: 'CHF 50.00 Rabatt auf Familienshooting',
                     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: false,
-                    redeemedAt: ''
+                    redeemedAt: '',
+                    customerId: 'demo@babsy.ch'
                 },
                 {
                     id: 'demo-3',
@@ -914,7 +1002,9 @@
                     description: '10% Rabatt auf das gesamte Sortiment',
                     createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: true,
-                    redeemedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+                    redeemedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    redeemedBy: 'KidisArt',
+                    customerId: 'demo@babsy.ch'
                 },
                 {
                     id: 'demo-4',
@@ -924,7 +1014,8 @@
                     description: '10% Rabatt mit Code babsy10',
                     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: false,
-                    redeemedAt: ''
+                    redeemedAt: '',
+                    customerId: 'demo@babsy.ch'
                 },
                 {
                     id: 'demo-5',
@@ -934,13 +1025,17 @@
                     description: '10% Rabatt online und offline',
                     createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: true,
-                    redeemedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString()
+                    redeemedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+                    redeemedBy: 'Babycomeback',
+                    customerId: 'demo@babsy.ch'
                 }
             ];
 
-            localStorage.setItem('babsy_vouchers', JSON.stringify(demoVouchers));
+            // Replace vouchers array with demo data
+            vouchers = demoVouchers;
+            await saveVoucherChanges();
             loadVouchers();
-            alert('Demo-Daten wurden hinzugefügt!\n\n5 Gutscheine:\n- 3 aktiv (2x physisch, 1x online)\n- 2 eingelöst');
+            alert('Demo-Daten wurden hinzugefügt!\n\n5 Gutscheine:\n- 3 aktiv (2x physisch, 1x online)\n- 2 eingelöst\n\nHinweis: Diese sind nur lokal gespeichert und werden als "ausstehende Synchronisation" markiert.');
         }
 
         // Clear all vouchers
