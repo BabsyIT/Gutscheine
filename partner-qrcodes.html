@@ -230,10 +230,10 @@
     </div>
 
     <script>
-        // Load partners from partners.json
+        // Load partners from data/partners.json
         async function loadPartners() {
             try {
-                const response = await fetch('partners.json');
+                const response = await fetch('data/partners.json');
                 const partners = await response.json();
                 generateQRCodes(partners);
             } catch (error) {
@@ -242,6 +242,7 @@
                     <div style="grid-column: 1/-1; text-align: center; color: #999; padding: 40px;">
                         <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
                         <p>Fehler beim Laden der Partner-Daten</p>
+                        <p style="font-size: 14px; margin-top: 10px;">Pfad: data/partners.json</p>
                     </div>
                 `;
             }
