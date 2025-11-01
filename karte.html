@@ -511,15 +511,22 @@
         // Load partners on map
         function loadPartners() {
             clearMarkers();
-            
+
             // Nur Partner mit GPS-Koordinaten anzeigen
             const mappablePartners = partners.filter(p => p.lat && p.lng);
-            
+
             mappablePartners.forEach((partner, index) => {
+                const logoText = partner.partnername.charAt(0);
+
+                // Marker HTML: zeige Bild wenn vorhanden, sonst Initialbuchstabe
+                const markerHtml = partner.logos
+                    ? `<img src="${partner.logos}" alt="${partner.partnername}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"><div style="display:none;">${logoText}</div>`
+                    : logoText;
+
                 const marker = L.marker([partner.lat, partner.lng], {
                     icon: L.divIcon({
                         className: 'custom-marker',
-                        html: partner.partnername.charAt(0),
+                        html: markerHtml,
                         iconSize: [36, 36],
                         iconAnchor: [18, 18]
                     })
