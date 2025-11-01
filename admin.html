@@ -299,9 +299,162 @@
             font-size: 14px;
             margin-top: 10px;
         }
+
+        /* Login Modal */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .login-modal {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-modal h2 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .login-modal .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            color: #374151;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .login-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #851566;
+            transform: translateY(-2px);
+        }
+
+        .login-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .logout-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            margin-left: auto;
+        }
+
+        .logout-btn:hover {
+            background: #4b5563;
+        }
+
+        .user-info {
+            color: #6b7280;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info strong {
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
+    <!-- Login Modal -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-modal">
+            <h2><i class="fas fa-lock"></i> Admin Login</h2>
+            <p class="subtitle">Bitte melde dich mit deinen Mitarbeiter-Zugangsdaten an</p>
+            <form class="login-form" id="loginForm">
+                <div class="login-error" id="loginError">
+                    Ungültige Zugangsdaten
+                </div>
+                <div class="form-group">
+                    <label for="username">Benutzername</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Passwort</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Anmelden
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Header Navigation -->
     <header class="babsy-header">
         <nav class="babsy-nav">
@@ -325,9 +478,15 @@
         <h1>
             <i class="fas fa-chart-line"></i>
             Admin Dashboard
-            <button class="refresh-btn" onclick="loadData()">
-                <i class="fas fa-sync-alt"></i> Aktualisieren
-            </button>
+            <div style="display: flex; align-items: center; gap: 15px; margin-left: auto;">
+                <div class="user-info" id="userInfo"></div>
+                <button class="refresh-btn" onclick="loadData()">
+                    <i class="fas fa-sync-alt"></i> Aktualisieren
+                </button>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Abmelden
+                </button>
+            </div>
         </h1>
 
         <div id="loading" class="loading">
@@ -392,6 +551,100 @@
     </div>
 
     <script>
+        // Authentication
+        function checkAuth() {
+            const session = localStorage.getItem('babsy_admin_session');
+            if (!session) {
+                showLogin();
+                return false;
+            }
+
+            try {
+                const sessionData = JSON.parse(session);
+                const loginTime = new Date(sessionData.loginTime);
+                const now = new Date();
+                const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+
+                // Session expires after 8 hours
+                if (hoursSinceLogin > 8) {
+                    localStorage.removeItem('babsy_admin_session');
+                    showLogin();
+                    return false;
+                }
+
+                // Update user info
+                document.getElementById('userInfo').innerHTML = `
+                    <i class="fas fa-user-circle"></i>
+                    <strong>${sessionData.name}</strong>
+                `;
+
+                hideLogin();
+                return true;
+            } catch (error) {
+                localStorage.removeItem('babsy_admin_session');
+                showLogin();
+                return false;
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function hideLogin() {
+            document.getElementById('loginOverlay').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('babsy_admin_session');
+            location.reload();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('loginError');
+
+            try {
+                const response = await fetch('data/users.json');
+                const data = await response.json();
+
+                const user = data.users.find(u =>
+                    u.username === username && u.password === password
+                );
+
+                if (user) {
+                    // Create session
+                    const session = {
+                        userId: user.id,
+                        username: user.username,
+                        name: user.name,
+                        role: user.role,
+                        loginTime: new Date().toISOString()
+                    };
+
+                    localStorage.setItem('babsy_admin_session', JSON.stringify(session));
+
+                    // Clear form
+                    document.getElementById('loginForm').reset();
+                    errorEl.classList.remove('show');
+
+                    // Reload page
+                    location.reload();
+                } else {
+                    errorEl.classList.add('show');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorEl.textContent = 'Fehler beim Login. Bitte versuche es erneut.';
+                errorEl.classList.add('show');
+            }
+        });
+
         async function loadData() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('content').style.display = 'none';
@@ -464,7 +717,11 @@
         }
 
         // Load on page load
-        document.addEventListener('DOMContentLoaded', loadData);
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                loadData();
+            }
+        });
     </script>
 </body>
 </html>

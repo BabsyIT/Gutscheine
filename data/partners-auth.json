@@ -1,0 +1,25 @@
+{
+  "partners": [
+    {
+      "id": "partner1",
+      "username": "etricolor",
+      "password": "partner123",
+      "partnerName": "E-TriColor",
+      "contactEmail": "info@e-tricolor.ch"
+    },
+    {
+      "id": "partner2",
+      "username": "kidisart",
+      "password": "partner123",
+      "partnerName": "KidisArt",
+      "contactEmail": "info@kidis-art.ch"
+    },
+    {
+      "id": "partner3",
+      "username": "demo",
+      "password": "demo123",
+      "partnerName": "Demo Partner",
+      "contactEmail": "demo@partner.ch"
+    }
+  ]
+}
