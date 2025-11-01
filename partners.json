@@ -6,8 +6,8 @@
     "adresse": "Margarethenstrasse 47, 4053 Basel, CH",
     "kanton": "Basel-Stadt",
     "homepage": "https://www.e-tricolor.ch/",
-    "lat": 47.5596,
-    "lng": 7.5886,
+    "lat": 47.5463,
+    "lng": 7.5841,
     "logos": "images/ID2.jpg"
   },
   {
@@ -17,8 +17,8 @@
     "adresse": "Violaweg 73, 4303 Kaiseraugst, CH",
     "kanton": "Basel-Landschaft",
     "homepage": "https://www.proinsura.ch/",
-    "lat": 47.5389,
-    "lng": 7.7222,
+    "lat": 47.5346,
+    "lng": 7.7326,
     "logos": "images/ID3.jpg"
   },
   {
@@ -28,8 +28,8 @@
     "adresse": "Weidenweg 28, 4303 Kaiseraugst, CH",
     "kanton": "Basel-Landschaft",
     "homepage": "https://partyon.ch/",
-    "lat": 47.5439,
-    "lng": 7.7222,
+    "lat": 47.5385,
+    "lng": 7.7244,
     "logos": "images/ID4.jpg"
   },
   {
@@ -39,8 +39,8 @@
     "adresse": "Zürcherstrasse 350, 8500 Frauenfeld, CH",
     "kanton": "Thurgau",
     "homepage": "https://ihrewebagentur.ch/",
-    "lat": 47.5536,
-    "lng": 8.8989,
+    "lat": 47.5675,
+    "lng": 8.9163,
     "logos": "images/ID5.jpg"
   },
   {
@@ -50,8 +50,8 @@
     "adresse": "Schützenmattstrasse 37, 4051 Basel, CH",
     "kanton": "Basel-Stadt",
     "homepage": "https://www.uta-gruetter-photographie.ch/",
-    "lat": 47.5646,
-    "lng": 7.5886,
+    "lat": 47.5556,
+    "lng": 7.5807,
     "logos": "images/ID6.jpg"
   },
   {
@@ -61,8 +61,8 @@
     "adresse": "Tessinerplatz 7, 8004 Zürich, CH",
     "kanton": "Zürich",
     "homepage": "https://www.seniorsatwork.ch/",
-    "lat": 47.3769,
-    "lng": 8.5312,
+    "lat": 47.3641,
+    "lng": 8.5321,
     "logos": "images/ID7.jpg"
   },
   {
@@ -72,8 +72,8 @@
     "adresse": "Am Pfisterhölzli 25, 8606 Greifensee, CH",
     "kanton": "Zürich",
     "homepage": "https://www.ms-w.ch/",
-    "lat": 47.3564,
-    "lng": 8.6786,
+    "lat": 47.3649,
+    "lng": 8.6888,
     "logos": "images/ID8.jpg"
   },
   {
@@ -83,8 +83,8 @@
     "adresse": "Sengelbachweg 21, 5000 Aarau, CH",
     "kanton": "Aargau",
     "homepage": "https://www.eva-couture.ch/start",
-    "lat": 47.3914,
-    "lng": 8.0458,
+    "lat": 47.3971, 
+    "lng": 8.0521,
     "logos": "images/ID9.jpg"
   },
   {
@@ -94,8 +94,8 @@
     "adresse": "Brennereistrasse 3, 4553 Subingen, CH",
     "kanton": "Solothurn",
     "homepage": "https://www.kidis-art.ch/",
-    "lat": 47.2167,
-    "lng": 7.6333,
+    "lat": 47.2000,
+    "lng": 7.6166,
     "logos": "images/ID10.jpg"
   },
   {
@@ -105,8 +105,8 @@
     "adresse": "Feierabendstrasse 46, 4051 Basel, CH",
     "kanton": "Basel-Stadt",
     "homepage": "https://www.zouts.ch/",
-    "lat": 47.5581,
-    "lng": 7.5903,
+    "lat": 47.5530, 
+    "lng": 7.5805,
     "logos": "images/ID11.jpg"
   },
   {
