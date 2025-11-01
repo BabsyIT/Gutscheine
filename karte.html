@@ -122,6 +122,138 @@
             width: 100%;
         }
 
+        /* List View Styles */
+        #list-view {
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+            background: #f5f5f5;
+            padding: 20px;
+            display: none;
+        }
+
+        #list-view.active {
+            display: block;
+        }
+
+        .list-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .list-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .list-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .list-card-header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            gap: 15px;
+            background: linear-gradient(135deg, #89cdd3 0%, #009fad 100%);
+        }
+
+        .list-card-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #009fad;
+            font-weight: bold;
+            font-size: 28px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .list-card-info h3 {
+            font-size: 1.3rem;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .list-card-category {
+            background: rgba(255, 255, 255, 0.9);
+            color: #009fad;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .list-card-body {
+            padding: 20px;
+        }
+
+        .list-card-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .list-card-address {
+            color: #999;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+        }
+
+        .list-card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .list-card-btn {
+            flex: 1;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .list-card-btn-primary {
+            background: #009fad;
+            color: white;
+        }
+
+        .list-card-btn-primary:hover {
+            background: #007a85;
+        }
+
+        .list-card-btn-secondary {
+            background: #a71a80;
+            color: white;
+        }
+
+        .list-card-btn-secondary:hover {
+            background: #8f1570;
+        }
+
         .legend {
             position: absolute;
             bottom: 30px;
@@ -194,6 +326,14 @@
             background: linear-gradient(135deg, var(--secondary-color, #009fad) 0%, #89cdd3 100%);
         }
 
+        .popup-category {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #009fad;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
         .popup-address {
             font-size: 12px;
             color: #666;
@@ -247,6 +387,11 @@
                 bottom: 20px;
                 font-size: 12px;
             }
+
+            .list-container {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -290,6 +435,12 @@
         
         <div id="map"></div>
         
+        <div id="list-view">
+            <div class="list-container" id="list-container">
+                <!-- Partner cards will be rendered here -->
+            </div>
+        </div>
+        
         <div class="legend">
             <div class="legend-title"><i class="fas fa-map-marker-alt"></i> Babsy Partner</div>
             <div class="legend-count"><i class="fas fa-store"></i> <span id="partner-count">0</span> Partner in der Schweiz</div>
@@ -297,7 +448,7 @@
     </div>
 
     <script>
-        // Partner Daten (Beispiel - in Realität würden diese aus einer API geladen)
+        // Partner Daten - erweitert mit allen Partnern aus partners.json
         const partners = [
             {
                 partnername: "E-TriColor",
@@ -343,11 +494,147 @@
                 homepage: "https://www.uta-gruetter-photographie.ch/",
                 lat: 47.5646,
                 lng: 7.5886
+            },
+            {
+                partnername: "seniors@work",
+                category: "Arbeit & Personal",
+                beschreibung_de: "Babsy-Members erhalten für ein Profil auf seniors@work einen einmaligen Gutschein in der Höhe von 15% mit dem Code babsy",
+                adresse: "Tessinerplatz 7, 8004 Zürich, CH",
+                homepage: "https://www.seniorsatwork.ch/",
+                lat: 47.3769,
+                lng: 8.5312
+            },
+            {
+                partnername: "Medical Services Weimann",
+                category: "Gesundheit & Medizin",
+                beschreibung_de: "Umfassende Dienstleistungen im Bereich der Notfallmedizin. Familien erhalten einen Rabatt von 10% auf Kurse bei Angabe des Stichwortes Babsy",
+                adresse: "Am Pfisterhölzli 25, 8606 Greifensee, CH",
+                homepage: "https://www.ms-w.ch/",
+                lat: 47.3564,
+                lng: 8.6786
+            },
+            {
+                partnername: "Evas Couture",
+                category: "Handwerk & Kreatives",
+                beschreibung_de: "Nähkurse für Anfänger und Fortgeschrittene. Babsy-Mitglieder profitieren von einem 10%-igen Rabatt auf Evas Kurse",
+                adresse: "Sengelbachweg 21, 5000 Aarau, CH",
+                homepage: "https://www.eva-couture.ch/start",
+                lat: 47.3914,
+                lng: 8.0458
+            },
+            {
+                partnername: "KidisArt",
+                category: "Kinder & Spielwaren",
+                beschreibung_de: "Shop für Basteln und Malen für Kinder und Erwachsene. Für alle Babsy-Mitglieder gibt es einen 10% Rabatt auf das gesamte Sortiment",
+                adresse: "Brennereistrasse 3, 4553 Subingen, CH",
+                homepage: "https://www.kidis-art.ch/",
+                lat: 47.2167,
+                lng: 7.6333
+            },
+            {
+                partnername: "ZOUTS!",
+                category: "Kinder & Familie",
+                beschreibung_de: "Mit dem Code babsy10 bekommen unsere Babsy-Mitglieder 10% Rabatt auf alle Abos von ZOUTS!",
+                adresse: "Feierabendstrasse 46, 4051 Basel, CH",
+                homepage: "https://www.zouts.ch/",
+                lat: 47.5581,
+                lng: 7.5903
+            },
+            {
+                partnername: "quitt",
+                category: "Arbeit & Personal",
+                beschreibung_de: "Mit dem Code BABSYQUITT profitieren Sie von Startguthaben bei quitt: Start CHF 20.-, Comfort CHF 40.-, Flat CHF 80.-",
+                adresse: "Birmensdorferstrasse 94, 8003 Zürich, CH",
+                homepage: "https://quitt.ch/",
+                lat: 47.3753,
+                lng: 8.5167
+            },
+            {
+                partnername: "Babycomeback",
+                category: "Kinder & Familie",
+                beschreibung_de: "Plattform für neue und secondhand Kleider und Accessoires für Babys und Kinder. 10% Rabatt für Babsy-Members mit dem Code: BABSY",
+                adresse: "Rümelinsplatz 7, 4001 Basel, CH",
+                homepage: "https://www.babycomeback.ch/",
+                lat: 47.5569,
+                lng: 7.5881
+            },
+            {
+                partnername: "UBS helpetica",
+                category: "Finanzen & Banking",
+                beschreibung_de: "Wir arbeiten in partnerschaftlicher Abstimmung mit dem Freiwilligen-Netzwerk UBS Helpetica zusammen",
+                adresse: "Bahnhofstrasse 45, 8098 Zürich, CH",
+                homepage: "https://ubs-helpetica.ch/de/",
+                lat: 47.3667,
+                lng: 8.5400
+            },
+            {
+                partnername: "Fidares",
+                category: "Treuhand & Beratung",
+                beschreibung_de: "Fidares ist der neue Treuhand-Partner von Treuhand-Trusty für alle administrativen Tasks rund um Babsy",
+                adresse: "Netzibodenstr. 23 D, 4133 Pratteln, CH",
+                homepage: "https://www.fidares.com/index.html",
+                lat: 47.5214,
+                lng: 7.6919
+            },
+            {
+                partnername: "spielwaren zauber.ch",
+                category: "Kinder & Spielwaren",
+                beschreibung_de: "Der virtuelle Shop für Spielwaren bietet einen Rabatt in der Höhe von 6% auf alle online-Käufe mit dem Code Babsy 2024",
+                adresse: "Zwillikerstrasse 64, 8908 Hedingen, CH",
+                homepage: "https://www.spielwarenzauber.ch/",
+                lat: 47.3039,
+                lng: 8.4839
+            },
+            {
+                partnername: "Salomea.ch",
+                category: "Beratung & Coaching",
+                beschreibung_de: "Expertin für Kinderwunsch und Geburtsvorbereitungen. Mit dem Stichwort BABSY bekommt man einen Rabatt von 30%",
+                adresse: "Schaffhauserrheinweg 55, 4058 Basel, CH",
+                homepage: "https://www.salomea.ch/",
+                lat: 47.5689,
+                lng: 7.6147
+            },
+            {
+                partnername: "KinderYoga",
+                category: "Sport & Wellness",
+                beschreibung_de: "Mit CHF 8 für eine Lektion mehr als 30% Rabatt! Jetzt anmelden und mitteilen, dass ihr von Babsy seid!",
+                adresse: "Bruderholzallee 169, 4059 Basel, CH",
+                homepage: "mailto:isabellekatharinavionnet@gmail.com",
+                lat: 47.5303,
+                lng: 7.5850
+            },
+            {
+                partnername: "Stickerella",
+                category: "Kinder & Spielwaren",
+                beschreibung_de: "20% Rabatt auf alle Sticker auf Stickerella.ch für die Babsy-Mitglieder mit BABSY025",
+                adresse: "Wildischachen 18, 5200 Brugg, CH",
+                homepage: "https://stickerella.ch/",
+                lat: 47.4811,
+                lng: 8.2089
+            },
+            {
+                partnername: "Maria Alejandra Jimenez",
+                category: "Beratung & Coaching",
+                beschreibung_de: "Violin- und Musikunterricht. Maria bietet einen 15% Rabatt für den ersten Monat eines Kurses an",
+                adresse: "Bläsiring 130, 4057 Basel, CH",
+                homepage: "https://mariaalejandrajimenez.com/",
+                lat: 47.5486,
+                lng: 7.5897
+            },
+            {
+                partnername: "Concordia",
+                category: "Versicherungen",
+                beschreibung_de: "Unser Partner für Krankenversicherungslösungen, speziell für Familien. Eine genossenschaftliche Versicherung",
+                adresse: "Pilatusstrasse 20, 6003 Luzern, CH",
+                homepage: "https://www.concordia.ch/de.html",
+                lat: 47.0502,
+                lng: 8.3093
             }
         ];
 
         let map;
         let markers = [];
+        let currentView = 'map';
 
         // Initialize map
         function initMap() {
@@ -396,6 +683,9 @@
                     <div class="popup-logo">
                         ${logoHtml}
                     </div>
+                    <div class="popup-category">
+                        ${partner.category}
+                    </div>
                     <div class="popup-address">
                         <i class="fas fa-map-marker-alt"></i> ${partner.adresse}
                     </div>
@@ -409,6 +699,69 @@
                     </div>` : ''}
                 </div>
             `;
+        }
+
+        // Load list view
+        function loadListView() {
+            const listContainer = document.getElementById('list-container');
+            listContainer.innerHTML = '';
+
+            partners.forEach(partner => {
+                const card = createListCard(partner);
+                listContainer.appendChild(card);
+            });
+        }
+
+        // Create list card
+        function createListCard(partner) {
+            const card = document.createElement('div');
+            card.className = 'list-card';
+
+            const logoText = partner.partnername.charAt(0).toUpperCase();
+
+            card.innerHTML = `
+                <div class="list-card-header">
+                    <div class="list-card-logo">${logoText}</div>
+                    <div class="list-card-info">
+                        <h3>${partner.partnername}</h3>
+                        <span class="list-card-category">${partner.category}</span>
+                    </div>
+                </div>
+                <div class="list-card-body">
+                    <p class="list-card-description">${partner.beschreibung_de}</p>
+                    <div class="list-card-address">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>${partner.adresse}</span>
+                    </div>
+                    <div class="list-card-actions">
+                        <button class="list-card-btn list-card-btn-secondary" onclick="showOnMap(${partner.lat}, ${partner.lng})">
+                            <i class="fas fa-map-marker-alt"></i> Auf Karte
+                        </button>
+                        ${partner.homepage ? `
+                            <a href="${partner.homepage}" target="_blank" class="list-card-btn list-card-btn-primary">
+                                <i class="fas fa-external-link-alt"></i> Website
+                            </a>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Show partner on map
+        function showOnMap(lat, lng) {
+            toggleView('map');
+            setTimeout(() => {
+                map.setView([lat, lng], 15);
+                // Find and open the marker popup
+                markers.forEach(marker => {
+                    const markerLatLng = marker.getLatLng();
+                    if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
+                        marker.openPopup();
+                    }
+                });
+            }, 300);
         }
 
         // Clear all markers
@@ -441,16 +794,96 @@
             }
         }
 
-        // Toggle view (placeholder for future functionality)
+        // Toggle view
         function toggleView(view) {
-            console.log('Switching to', view, 'view');
-            // Future: Implement list view
+            currentView = view;
+            
+            const mapView = document.getElementById('map');
+            const listView = document.getElementById('list-view');
+            const mapBtn = document.getElementById('map-view-btn');
+            const listBtn = document.getElementById('list-view-btn');
+
+            if (view === 'map') {
+                mapView.style.display = 'block';
+                listView.classList.remove('active');
+                mapBtn.classList.add('active');
+                listBtn.classList.remove('active');
+                
+                // Refresh map after showing
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                }, 100);
+            } else {
+                mapView.style.display = 'none';
+                listView.classList.add('active');
+                mapBtn.classList.remove('active');
+                listBtn.classList.add('active');
+                
+                // Load list view if not already loaded
+                if (document.getElementById('list-container').children.length === 0) {
+                    loadListView();
+                }
+            }
+        }
+
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('search-input');
+            const searchBtn = document.getElementById('search-btn');
+
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        }
+
+        function performSearch() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            
+            if (!searchTerm) {
+                return;
+            }
+
+            const matchingPartner = partners.find(partner => 
+                partner.partnername.toLowerCase().includes(searchTerm) ||
+                partner.category.toLowerCase().includes(searchTerm) ||
+                partner.adresse.toLowerCase().includes(searchTerm)
+            );
+
+            if (matchingPartner) {
+                if (currentView === 'map') {
+                    map.setView([matchingPartner.lat, matchingPartner.lng], 15);
+                    markers.forEach(marker => {
+                        const markerLatLng = marker.getLatLng();
+                        if (markerLatLng.lat === matchingPartner.lat && markerLatLng.lng === matchingPartner.lng) {
+                            marker.openPopup();
+                        }
+                    });
+                } else {
+                    // Scroll to card in list view
+                    const cards = document.querySelectorAll('.list-card');
+                    cards.forEach(card => {
+                        if (card.querySelector('h3').textContent === matchingPartner.partnername) {
+                            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            card.style.boxShadow = '0 5px 30px rgba(0,159,173,0.4)';
+                            setTimeout(() => {
+                                card.style.boxShadow = '';
+                            }, 2000);
+                        }
+                    });
+                }
+            }
         }
 
         // Initialize everything on page load
         document.addEventListener('DOMContentLoaded', function() {
             setupMobileMenu();
             initMap();
+            setupSearch();
         });
     </script>
 </body>
