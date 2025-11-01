@@ -129,11 +129,17 @@
             overflow-y: auto;
             background: #f5f5f5;
             padding: 20px;
+            padding-top: 80px;
             display: none;
         }
 
         #list-view.active {
             display: block;
+        }
+
+        /* Hide search bar when list view is active */
+        body:has(#list-view.active) .search-filter-bar {
+            display: none;
         }
 
         .list-container {
