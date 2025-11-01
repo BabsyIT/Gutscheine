@@ -532,6 +532,32 @@
         .filter-reset-btn:hover {
             background: #e0e0e0;
         }
+        /* Fade overlay only visible when list view is active */
+        .list-fade-overlay {
+        display: none; /* hidden by default */
+        }
+
+        #list-view.active ~ .list-fade-overlay,
+        .list-fade-overlay.active {
+        display: block;
+        }
+
+        /* Fade overlay for list view */
+            .list-fade-overlay {
+                position: fixed;
+                top: 80px; /* adjust based on your header + spacing */
+                left: 0;
+                width: 100vw;
+                height: 80px; /* how tall the gradient fade is */
+                pointer-events: none; /* allow clicks to pass through */
+                z-index: 900; /* below search/filter bar (z-index: 1000) */
+                background: linear-gradient(
+                    to bottom,
+                    rgba(245, 245, 245, 1) 20%,
+                    rgba(245, 245, 245, 0) 100%
+                );
+                backdrop-filter: blur(1px);
+            }
 
         @media (max-width: 768px) {
             .search-box {
@@ -597,11 +623,9 @@
             </button>
         </nav>
     </header>
-
+    
     <div id="map-container">
         <div class="search-filter-bar">
-            <div class="list-fade-overlay">
-            </div>
             <div class="search-box">
                 <input type="text" id="search-input" placeholder="Partner suchen...">
                 <button id="search-btn"><i class="fas fa-search"></i></button>
@@ -610,8 +634,7 @@
             <button id="filter-btn" class="filter-button" onclick="openFilterModal()">
                 <i class="fas fa-filter"></i> Filter
             </button>
-        </div>
-        
+        </div>        
         <div class="view-toggle">
             <button id="map-view-btn" class="view-btn active" onclick="toggleView('map')">
                 <i class="fas fa-map"></i> Karte
@@ -628,7 +651,10 @@
                 <!-- Partner cards will be rendered here -->
             </div>
         </div>
-        
+
+        <div class="list-fade-overlay">
+        </div>
+
         <div class="legend">
             <div class="legend-title"><i class="fas fa-map-marker-alt"></i> Babsy Partner</div>
             <div class="legend-count"><i class="fas fa-store"></i> <span id="partner-count">0</span> Partner in der Schweiz</div>
