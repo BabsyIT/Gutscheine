@@ -368,6 +368,27 @@
             background: #007a85;
         }
 
+        .popup-voucher-btn {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .popup-voucher-btn button {
+            background: var(--primary-color, #a71a80);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .popup-voucher-btn button:hover {
+            background: #851566;
+        }
+
         @media (max-width: 768px) {
             .search-box {
                 width: calc(100vw - 120px);
@@ -539,6 +560,11 @@
                             <i class="fas fa-external-link-alt"></i> Website besuchen
                         </a>
                     </div>` : ''}
+                    <div class="popup-voucher-btn">
+                        <button onclick="generateVoucher('${partner.partnername.replace(/'/g, "\\'")}', '${partner.beschreibung_de.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-gift"></i> Gutschein generieren
+                        </button>
+                    </div>
                 </div>
             `;
         }
@@ -620,6 +646,43 @@
             // Zähle nur Partner mit GPS-Koordinaten
             const mappablePartners = partners.filter(p => p.lat && p.lng);
             document.getElementById('partner-count').textContent = mappablePartners.length;
+        }
+
+        // Generate voucher code
+        function generateVoucherCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                if (i === 4) code += '-';
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        // Generate voucher for partner
+        function generateVoucher(partnerName, description) {
+            const voucherCode = generateVoucherCode();
+            const voucher = {
+                id: Date.now().toString(),
+                code: voucherCode,
+                title: partnerName,
+                description: description,
+                partner: partnerName,
+                value: description,
+                createdAt: new Date().toISOString(),
+                redeemedAt: '',
+                isRedeemed: false
+            };
+
+            // Show success message
+            alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.`);
+
+            // Optional: Save to localStorage for persistence across pages
+            let vouchers = JSON.parse(localStorage.getItem('babsy_vouchers') || '[]');
+            vouchers.push(voucher);
+            localStorage.setItem('babsy_vouchers', JSON.stringify(vouchers));
+
+            console.log('Gutschein generiert:', voucher);
         }
 
         // Mobile Menu Toggle
