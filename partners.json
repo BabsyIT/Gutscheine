@@ -7,7 +7,8 @@
     "kanton": "Basel-Stadt",
     "homepage": "https://www.e-tricolor.ch/",
     "lat": 47.5596,
-    "lng": 7.5886
+    "lng": 7.5886,
+    "logos": "images/ID2.jpg"
   },
   {
     "partnername": "proinsura",
@@ -17,7 +18,8 @@
     "kanton": "Basel-Landschaft",
     "homepage": "https://www.proinsura.ch/",
     "lat": 47.5389,
-    "lng": 7.7222
+    "lng": 7.7222,
+    "logos": "images/ID3.jpg"
   },
   {
     "partnername": "PartyOn",
@@ -27,7 +29,8 @@
     "kanton": "Basel-Landschaft",
     "homepage": "https://partyon.ch/",
     "lat": 47.5439,
-    "lng": 7.7222
+    "lng": 7.7222,
+    "logos": "images/ID4.jpg"
   },
   {
     "partnername": "Zangger Websolutions",
@@ -37,7 +40,8 @@
     "kanton": "Thurgau",
     "homepage": "https://ihrewebagentur.ch/",
     "lat": 47.5536,
-    "lng": 8.8989
+    "lng": 8.8989,
+    "logos": "images/ID5.jpg"
   },
   {
     "partnername": "Uta Grütter Photography",
@@ -47,7 +51,8 @@
     "kanton": "Basel-Stadt",
     "homepage": "https://www.uta-gruetter-photographie.ch/",
     "lat": 47.5646,
-    "lng": 7.5886
+    "lng": 7.5886,
+    "logos": "images/ID6.jpg"
   },
   {
     "partnername": "seniors@work",
@@ -57,7 +62,8 @@
     "kanton": "Zürich",
     "homepage": "https://www.seniorsatwork.ch/",
     "lat": 47.3769,
-    "lng": 8.5312
+    "lng": 8.5312,
+    "logos": "images/ID7.jpg"
   },
   {
     "partnername": "Medical Services Weimann",
@@ -67,7 +73,8 @@
     "kanton": "Zürich",
     "homepage": "https://www.ms-w.ch/",
     "lat": 47.3564,
-    "lng": 8.6786
+    "lng": 8.6786,
+    "logos": "images/ID8.jpg"
   },
   {
     "partnername": "Evas Couture",
@@ -77,7 +84,8 @@
     "kanton": "Aargau",
     "homepage": "https://www.eva-couture.ch/start",
     "lat": 47.3914,
-    "lng": 8.0458
+    "lng": 8.0458,
+    "logos": "images/ID9.jpg"
   },
   {
     "partnername": "KidisArt",
@@ -87,7 +95,8 @@
     "kanton": "Solothurn",
     "homepage": "https://www.kidis-art.ch/",
     "lat": 47.2167,
-    "lng": 7.6333
+    "lng": 7.6333,
+    "logos": "images/ID10.jpg"
   },
   {
     "partnername": "ZOUTS!",
@@ -97,7 +106,8 @@
     "kanton": "Basel-Stadt",
     "homepage": "https://www.zouts.ch/",
     "lat": 47.5581,
-    "lng": 7.5903
+    "lng": 7.5903,
+    "logos": "images/ID11.jpg"
   },
   {
     "partnername": "quitt",
@@ -107,7 +117,8 @@
     "kanton": "Zürich",
     "homepage": "https://quitt.ch/",
     "lat": 47.3753,
-    "lng": 8.5167
+    "lng": 8.5167,
+    "logos": "images/ID12.jpg"
   },
   {
     "partnername": "Babycomeback",
@@ -117,7 +128,8 @@
     "kanton": "Basel-Stadt",
     "homepage": "https://www.babycomeback.ch/",
     "lat": 47.5569,
-    "lng": 7.5881
+    "lng": 7.5881,
+    "logos": "images/ID13.jpg"
   },
   {
     "partnername": "UBS helpetica",
@@ -127,7 +139,8 @@
     "kanton": "Zürich",
     "homepage": "https://ubs-helpetica.ch/de/",
     "lat": 47.3667,
-    "lng": 8.5400
+    "lng": 8.5400,
+    "logos": "images/ID14.jpg"
   },
   {
     "partnername": "Fidares",
@@ -137,7 +150,8 @@
     "kanton": "Basel-Landschaft",
     "homepage": "https://www.fidares.com/index.html",
     "lat": 47.5214,
-    "lng": 7.6919
+    "lng": 7.6919,
+    "logos": "images/ID15.jpg"
   },
   {
     "partnername": "spielwaren zauber.ch",
@@ -147,7 +161,8 @@
     "kanton": "Zürich",
     "homepage": "https://www.spielwarenzauber.ch/",
     "lat": 47.3039,
-    "lng": 8.4839
+    "lng": 8.4839,
+    "logos": "images/ID16.jpg"
   },
   {
     "partnername": "Salomea.ch",
@@ -157,7 +172,8 @@
     "kanton": "Basel-Stadt",
     "homepage": "https://www.salomea.ch/",
     "lat": 47.5689,
-    "lng": 7.6147
+    "lng": 7.6147,
+    "logos": "images/ID17.jpg"
   },
   {
     "partnername": "KinderYoga",
@@ -167,7 +183,8 @@
     "kanton": "Basel-Stadt",
     "homepage": "mailto:isabellekatharinavionnet@gmail.com",
     "lat": 47.5303,
-    "lng": 7.5850
+    "lng": 7.5850,
+    "logos": "images/ID18.jpg"
   },
   {
     "partnername": "Stickerella",
@@ -177,7 +194,8 @@
     "kanton": "Aargau",
     "homepage": "https://stickerella.ch/",
     "lat": 47.4811,
-    "lng": 8.2089
+    "lng": 8.2089,
+    "logos": "images/ID19.jpg"
   },
   {
     "partnername": "Maria Alejandra Jimenez",
@@ -187,7 +205,8 @@
     "kanton": "Basel-Stadt",
     "homepage": "https://mariaalejandrajimenez.com/",
     "lat": 47.5486,
-    "lng": 7.5897
+    "lng": 7.5897,
+    "logos": "images/ID20.jpg"
   },
   {
     "partnername": "Concordia",
@@ -197,6 +216,7 @@
     "kanton": "Luzern",
     "homepage": "https://www.concordia.ch/de.html",
     "lat": 47.0502,
-    "lng": 8.3093
+    "lng": 8.3093,
+    "logos": "images/ID21.jpg"
   }
 ]
