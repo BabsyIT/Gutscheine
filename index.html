@@ -575,6 +575,9 @@
             });
 
             console.log('✅ Alle', partnerGrid.children.length, 'Partner wurden zum Grid hinzugefügt');
+
+            // Observer für neue Partner-Karten neu initialisieren
+            setupScrollAnimation();
         }
 
         function createPartnerCard(partner) {
