@@ -1,13 +1,26 @@
 # Babsy Partnergutscheine System
 
-Ein vollständiges Gutschein-Verwaltungssystem mit Partnerkarte, E-Mail-Versand und GitHub Actions Integration.
+Ein vollständiges Gutschein-Verwaltungssystem mit Partnerkarte, QR-Code-Scanner und hybrider Datenspeicherung.
+
+## 🚀 Live Demo
+
+**Produktiv-System**: https://babsyit.github.io/Gutscheine/
+
+## 📖 Dokumentation
+
+- **[DEMO-GUIDE.md](DEMO-GUIDE.md)** - Schritt-für-Schritt Anleitung für Live-Demos
+- **[SETUP.md](SETUP.md)** - Technisches Setup und Architektur
 
 ## Features
 
-- 🗺️ **Interaktive Partner-Karte** - Zeigt alle Partner auf einer Schweizer Karte
+- 🗺️ **Interaktive Partner-Karte** - Zeigt alle 20 Partner auf einer Schweizer Karte
 - 🎫 **Gutschein-Generierung** - Direkt von der Partnerkarte aus
-- 📧 **E-Mail-Versand** - Automatischer Versand via GitHub Actions
-- 📊 **Gutschein-Verwaltung** - Übersicht über alle generierten Gutscheine
+- 📱 **QR-Code Scanner** - Gutscheine im Laden einlösen (Kamera-basiert)
+- 🌐 **Online/Offline Partner** - Unterschiedliche Flows für physische Läden vs. Online-Shops
+- 📊 **Admin Dashboard** - Babsy Statistiken und Auswertungen
+- 💾 **Hybrid Storage** - localStorage + zentrale JSON-Datenbank
+- 🔄 **Sync-Tracking** - Zeigt ausstehende Synchronisationen an
+- 📥 **Export-Funktion** - Manuelle Synchronisation für Demo
 - 📱 **Responsive Design** - Optimiert für Desktop und Mobile
 - 🎨 **Einheitliches Design** - Konsistente Farben und Stile
 
@@ -15,138 +28,146 @@ Ein vollständiges Gutschein-Verwaltungssystem mit Partnerkarte, E-Mail-Versand 
 
 ```
 Gutscheine/
-├── index.html              # Startseite (noch zu erstellen)
-├── karte.html             # Interaktive Partnerkarte mit Leaflet
-├── gutscheine.html        # Gutschein-Verwaltungsseite
-├── code.html              # Code-Verwaltung
-├── countdown.html         # Countdown-Timer
-├── styles.css             # Gemeinsame Styles
-├── api/
-│   └── send-email.js      # E-Mail-Versand API
+├── index.html                   # Startseite mit Partner-Übersicht
+├── karte.html                   # Interaktive Partnerkarte mit Leaflet
+├── gutscheine.html              # Gutschein-Verwaltung (Kunde)
+├── admin.html                   # Admin Dashboard (Babsy)
+├── partner-qrcodes.html         # QR-Codes für Partner zum Ausdrucken
+├── styles.css                   # Gemeinsame Styles
+├── data/
+│   ├── partners.json            # Partner-Daten mit GPS-Koordinaten
+│   └── vouchers.json            # Zentrale Gutschein-Datenbank
+├── scripts/
+│   ├── generate-voucher.js      # Node.js Script: Gutschein generieren
+│   └── redeem-voucher.js        # Node.js Script: Gutschein einlösen
 ├── .github/
 │   └── workflows/
-│       └── send-voucher-email.yml  # GitHub Actions Workflow
-└── README.md              # Diese Datei
+│       └── manage-vouchers.yml  # GitHub Action für Gutschein-Verwaltung
+├── DEMO-GUIDE.md                # Demo-Anleitung
+├── SETUP.md                     # Technische Dokumentation
+└── README.md                    # Diese Datei
 ```
 
-## Setup
+## Schnellstart
 
-### 1. GitHub Repository vorbereiten
+### Für die Demo:
 
-1. Repository auf GitHub erstellen (falls noch nicht vorhanden)
-2. Code committen und pushen
+1. Öffne: https://babsyit.github.io/Gutscheine/gutscheine.html
+2. Klicke: **"Demo-Daten laden"**
+3. Teste: QR-Code Scanner oder Online-Partner Flow
+4. Siehe: [DEMO-GUIDE.md](DEMO-GUIDE.md) für detaillierte Szenarien
 
-### 2. GitHub Secrets konfigurieren
+### Für Entwickler:
 
-Gehe zu: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`
-
-Füge folgende Secrets hinzu:
-
-```
-SMTP_SERVER       = smtp.gmail.com (oder dein SMTP-Server)
-SMTP_PORT         = 587
-SMTP_USERNAME     = deine-email@example.com
-SMTP_PASSWORD     = dein-app-passwort
-SMTP_FROM_EMAIL   = noreply@babsy.ch
-GITHUB_TOKEN      = (wird automatisch bereitgestellt)
-```
-
-#### Gmail SMTP Setup
-
-Falls du Gmail verwendest:
-
-1. Gehe zu [Google Account](https://myaccount.google.com/)
-2. Security → 2-Step Verification aktivieren
-3. Security → App passwords → Neue App erstellen
-4. Verwende das generierte Passwort für `SMTP_PASSWORD`
-
-### 3. E-Mail-Versand Integration
-
-#### Option A: Serverless (Netlify/Vercel)
-
-1. Deploye das Projekt auf Netlify oder Vercel
-2. Füge Environment Variables hinzu:
-   ```
-   GITHUB_TOKEN=dein_github_token
-   GITHUB_REPO=BabsyIT/Gutscheine
-   ```
-
-3. Die `api/send-email.js` wird automatisch als Serverless Function erkannt
-
-#### Option B: GitHub Actions (Empfohlen für einfaches Setup)
-
-Der Workflow ist bereits konfiguriert! E-Mails werden automatisch versendet wenn:
-
-1. Ein Benutzer auf "E-Mail senden" klickt
-2. Die GitHub API den Workflow auslöst
-3. Der Workflow die E-Mail über SMTP versendet
-
-### 4. Frontend-Integration aktivieren
-
-Aktualisiere `gutscheine.html` um die API zu verwenden:
-
-```javascript
-// In gutscheine.html, Zeile ~370
-document.getElementById('emailForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const recipientEmail = document.getElementById('recipientEmail').value;
-    const senderName = document.getElementById('senderName').value;
-
-    try {
-        // Option 1: Über Serverless Function
-        const response = await fetch('/api/send-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                recipientEmail,
-                voucherCode: selectedVoucher.code,
-                partnerName: selectedVoucher.partner,
-                description: selectedVoucher.description,
-                senderName
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            alert('✅ E-Mail erfolgreich versendet!');
-        } else {
-            throw new Error(data.error);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('❌ Fehler beim Versenden der E-Mail');
-    }
-
-    closeEmailModal();
-});
-```
+Siehe [SETUP.md](SETUP.md) für vollständige Setup-Anleitung.
 
 ## Verwendung
 
-### Gutschein erstellen
+### Als Kunde: Gutschein einlösen
 
-1. Öffne [karte.html](karte.html)
-2. Klicke auf einen Partner-Marker
-3. Klicke auf "Gutschein generieren"
-4. Der Gutschein wird erstellt und im localStorage gespeichert
+**Physischer Laden** (z.B. E-TriColor):
+1. Öffne [gutscheine.html](https://babsyit.github.io/Gutscheine/gutscheine.html)
+2. Wähle einen aktiven Gutschein
+3. Klicke **"QR scannen"**
+4. Scanne den QR-Code im Laden
+5. Gutschein wird validiert und eingelöst
 
-### Gutscheine verwalten
+**Online-Partner** (z.B. KidisArt):
+1. Öffne [gutscheine.html](https://babsyit.github.io/Gutscheine/gutscheine.html)
+2. Wähle einen Online-Gutschein
+3. Klicke **"Code zeigen"**
+4. Nutze den Code auf der Partner-Website
 
-1. Öffne [gutscheine.html](gutscheine.html)
-2. Siehe alle erstellten Gutscheine
-3. Filtere nach Status (Alle/Aktiv/Eingelöst)
-4. Versende Gutscheine per E-Mail
-5. Lösche nicht mehr benötigte Gutscheine
+### Als Partner: QR-Code generieren
 
-### Gutschein per E-Mail versenden
+1. Öffne [partner-qrcodes.html](https://babsyit.github.io/Gutscheine/partner-qrcodes.html)
+2. Suche deinen Partner-Namen
+3. Drucke den QR-Code aus
+4. Hänge ihn an der Kasse auf
 
-1. Klicke auf "E-Mail" bei einem aktiven Gutschein
-2. Gebe die E-Mail-Adresse des Empfängers ein
-3. Optional: Füge deinen Namen hinzu
-4. Klicke auf "Senden"
-5. Die E-Mail wird über GitHub Actions versendet
+### Als Babsy: Statistiken ansehen
+
+1. Öffne [admin.html](https://babsyit.github.io/Gutscheine/admin.html)
+2. Siehe Gesamt-Statistiken
+3. Filtere nach Partner
+4. Exportiere Reports
+
+## Technische Details
+
+### Hybrid Storage System
+
+Das System verwendet zwei Datenschichten:
+
+**1. Zentrale Datenbank** (`data/vouchers.json`):
+- Git-versioniert
+- Für alle Benutzer sichtbar
+- Babsy Admin-Dashboard liest hieraus
+- Wird via GitHub Actions oder manuell aktualisiert
+
+**2. Lokaler Speicher** (Browser localStorage):
+- Benutzerspezifisch
+- Offline-fähig
+- Sofortige Updates
+- Wird mit zentraler DB synchronisiert
+
+**Merge-Strategie**:
+```javascript
+// Beim Laden:
+zentrale_gutscheine = fetch('data/vouchers.json')
+lokale_gutscheine = localStorage.getItem('babsy_vouchers')
+alle_gutscheine = [...zentrale, ...nur_lokale]
+
+// Beim Speichern:
+localStorage.setItem('babsy_vouchers', gutscheine)
+markiere_als_pending_sync()
+export_funktion_für_manuellen_sync()
+```
+
+### QR-Code Validierung
+
+```javascript
+// Partner QR-Code Format:
+{
+  "type": "BABSY_PARTNER",
+  "partner": "E-TriColor",
+  "category": "Print & Druck"
+}
+
+// Beim Scannen:
+if (qr_code.partner === gutschein.partner) {
+  einlösen() // ✅
+} else {
+  fehler("Falscher Partner!") // ❌
+}
+```
+
+## Setup (für Entwickler)
+
+### 1. Repository klonen
+
+```bash
+git clone https://github.com/BabsyIT/Gutscheine.git
+cd Gutscheine
+```
+
+### 2. GitHub Actions konfigurieren (optional)
+
+Für automatische Gutschein-Verwaltung via GitHub Actions:
+
+1. Gehe zu: `Settings` → `Actions` → `General`
+2. Aktiviere: `Read and write permissions`
+3. Die Workflow-Datei muss manuell via GitHub Web UI hinzugefügt werden
+4. Siehe [SETUP.md](SETUP.md) für Details
+
+### 3. Lokal testen
+
+```bash
+# Öffne einfach die HTML-Dateien im Browser
+open index.html
+# oder
+python -m http.server 8000
+# dann: http://localhost:8000
+```
 
 ## Farbschema
 
@@ -168,65 +189,61 @@ document.getElementById('emailForm').addEventListener('submit', async (e) => {
 ## Technologien
 
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **Karte**: Leaflet.js + OpenStreetMap
-- **Icons**: Font Awesome 6
-- **Backend**: GitHub Actions + SMTP
-- **Storage**: LocalStorage (client-side)
+- **Karte**: Leaflet.js 1.9.4 + OpenStreetMap
+- **QR-Codes**: qrcode.js 1.5.3 (Generierung) + html5-qrcode 2.3.8 (Scanner)
+- **Icons**: Font Awesome 6.4.0
+- **Backend**: GitHub Actions + Node.js Scripts
+- **Storage**: Hybrid (localStorage + JSON-Datenbank)
+- **Hosting**: GitHub Pages
 
-## Sicherheitshinweise
+## Roadmap / Nächste Schritte
 
-⚠️ **Wichtig**:
+**Für die Demo** (Aktuell fertig):
+- ✅ index.html Startseite
+- ✅ Seiten stilistisch angleichen
+- ✅ QR-Code-Generierung und -Scanner
+- ✅ Admin-Dashboard (Babsy)
+- ✅ Partner QR-Codes zum Ausdrucken
+- ✅ Hybrid Storage System
 
-1. GitHub Token **NIEMALS** im Frontend-Code verwenden
-2. Verwende immer einen Backend-Service oder Serverless Functions
-3. SMTP-Credentials nur in GitHub Secrets speichern
-4. Implementiere Rate-Limiting für E-Mail-Versand
-5. Validiere E-Mail-Adressen serverseitig
-
-## Nächste Schritte
-
-- [ ] index.html Startseite erstellen
-- [ ] Seiten stilistisch vollständig angleichen
-- [ ] Datenbank-Integration (optional, statt localStorage)
-- [ ] Admin-Panel für Partner-Verwaltung
-- [ ] QR-Code-Generierung für Gutscheine
+**Für die Produktion** (Siehe [DEMO-GUIDE.md](DEMO-GUIDE.md)):
+- [ ] Backend API (Node.js/Express)
+- [ ] Echte Datenbank (PostgreSQL/MongoDB)
+- [ ] Authentifizierung (OAuth/JWT)
+- [ ] Partner Portal (Separate Admin-UI)
+- [ ] E-Mail Service (SendGrid/AWS SES)
+- [ ] Mobile App (React Native)
 - [ ] PDF-Export für Gutscheine
+- [ ] Analytics/Tracking
 
 ## Deployment
 
-### GitHub Pages
+### GitHub Pages (Aktuell)
 
-1. Gehe zu Repository Settings
-2. Pages → Source: `main` branch
-3. URL: `https://babsyit.github.io/Gutscheine/`
+**Live URL**: https://babsyit.github.io/Gutscheine/
 
-### Netlify
+Das System ist bereits deployed und funktioniert komplett ohne Backend-Server!
 
+**Setup**:
+1. Repository Settings → Pages
+2. Source: `main` branch
+3. Automatisches Deployment bei jedem Push
+
+### Alternative Hosting-Optionen
+
+**Netlify** oder **Vercel** funktionieren ebenfalls:
 ```bash
-# netlify.toml
-[build]
-  publish = "."
-
-[functions]
-  directory = "api"
+# Einfach das Repository verbinden
+# Keine Build-Konfiguration nötig (statische Seite)
 ```
 
-### Vercel
-
-```json
-{
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" }
-  ]
-}
-```
-
-## Support
+## Support & Feedback
 
 Bei Fragen oder Problemen:
-- GitHub Issues erstellen
-- Dokumentation prüfen
-- SMTP-Logs in GitHub Actions überprüfen
+- 📖 [DEMO-GUIDE.md](DEMO-GUIDE.md) - Vollständige Demo-Anleitung
+- 🛠️ [SETUP.md](SETUP.md) - Technische Dokumentation
+- 🐛 [GitHub Issues](https://github.com/BabsyIT/Gutscheine/issues) - Bug Reports
+- 📊 [GitHub Actions](https://github.com/BabsyIT/Gutscheine/actions) - Workflow Status
 
 ## Lizenz
 
