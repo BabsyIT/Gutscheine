@@ -1,0 +1,176 @@
+name: Send Voucher Email
+
+on:
+  workflow_dispatch:
+    inputs:
+      recipient_email:
+        description: 'Empfänger E-Mail-Adresse'
+        required: true
+        type: string
+      voucher_code:
+        description: 'Gutschein-Code'
+        required: true
+        type: string
+      partner_name:
+        description: 'Partner Name'
+        required: true
+        type: string
+      description:
+        description: 'Gutschein Beschreibung'
+        required: true
+        type: string
+      sender_name:
+        description: 'Name des Absenders (optional)'
+        required: false
+        type: string
+        default: 'Babsy Partnergutscheine'
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Send Email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: '🎁 Ihr Babsy Partnergutschein von ${{ inputs.partner_name }}'
+          to: ${{ inputs.recipient_email }}
+          from: ${{ secrets.SMTP_FROM_EMAIL }}
+          html_body: |
+            <!DOCTYPE html>
+            <html lang="de">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                  line-height: 1.6;
+                  color: #333;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 20px;
+                }
+                .header {
+                  background: linear-gradient(135deg, #a71a80, #009fad);
+                  color: white;
+                  padding: 30px;
+                  text-align: center;
+                  border-radius: 12px 12px 0 0;
+                }
+                .header h1 {
+                  margin: 0;
+                  font-size: 28px;
+                }
+                .content {
+                  background: #f9fafb;
+                  padding: 30px;
+                  border: 2px solid #e5e7eb;
+                  border-top: none;
+                }
+                .voucher-box {
+                  background: white;
+                  padding: 20px;
+                  border-radius: 8px;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                  margin: 20px 0;
+                }
+                .voucher-code {
+                  background: linear-gradient(135deg, #a71a80, #009fad);
+                  color: white;
+                  padding: 15px;
+                  border-radius: 8px;
+                  text-align: center;
+                  font-family: 'Courier New', monospace;
+                  font-size: 24px;
+                  font-weight: bold;
+                  letter-spacing: 3px;
+                  margin: 20px 0;
+                }
+                .partner-name {
+                  font-size: 22px;
+                  color: #a71a80;
+                  font-weight: bold;
+                  margin-bottom: 10px;
+                }
+                .description {
+                  color: #666;
+                  font-size: 16px;
+                  line-height: 1.8;
+                }
+                .footer {
+                  background: #f3f4f6;
+                  padding: 20px;
+                  text-align: center;
+                  font-size: 14px;
+                  color: #6b7280;
+                  border-radius: 0 0 12px 12px;
+                }
+                .cta-button {
+                  display: inline-block;
+                  background: #009fad;
+                  color: white;
+                  padding: 12px 30px;
+                  text-decoration: none;
+                  border-radius: 25px;
+                  font-weight: bold;
+                  margin: 20px 0;
+                }
+                .sender-info {
+                  font-style: italic;
+                  color: #666;
+                  margin-bottom: 20px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h1>🎁 Ihr Babsy Partnergutschein</h1>
+              </div>
+              <div class="content">
+                <div class="sender-info">
+                  📧 Gesendet von: ${{ inputs.sender_name }}
+                </div>
+                <div class="voucher-box">
+                  <div class="partner-name">
+                    ${{ inputs.partner_name }}
+                  </div>
+                  <div class="description">
+                    ${{ inputs.description }}
+                  </div>
+                  <div class="voucher-code">
+                    ${{ inputs.voucher_code }}
+                  </div>
+                  <p style="text-align: center; color: #666; font-size: 14px;">
+                    Zeigen Sie diesen Code beim Partner vor, um Ihren Gutschein einzulösen.
+                  </p>
+                </div>
+                <div style="text-align: center;">
+                  <a href="https://babsyit.github.io/Gutscheine/" class="cta-button">
+                    Weitere Gutscheine entdecken
+                  </a>
+                </div>
+              </div>
+              <div class="footer">
+                <p>
+                  <strong>Babsy Partnergutscheine</strong><br>
+                  Ihre Plattform für exklusive Partner-Angebote
+                </p>
+                <p style="font-size: 12px; margin-top: 10px;">
+                  © 2025 Babsy. Alle Rechte vorbehalten.
+                </p>
+              </div>
+            </body>
+            </html>
+
+      - name: Log success
+        run: |
+          echo "✅ E-Mail erfolgreich gesendet an: ${{ inputs.recipient_email }}"
+          echo "Gutschein-Code: ${{ inputs.voucher_code }}"
+          echo "Partner: ${{ inputs.partner_name }}"
