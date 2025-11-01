@@ -538,12 +538,16 @@
     <script>
         // Partner Daten laden
         async function loadPartners() {
+            console.log('🔄 Lade Partner aus partners.json...');
             try {
                 const response = await fetch('partners.json');
+                console.log('✅ Fetch erfolgreich, Status:', response.status);
                 const partners = await response.json();
+                console.log('✅ JSON geparst, Anzahl Partner:', partners.length);
                 displayPartners(partners);
             } catch (error) {
-                console.error('Fehler beim Laden der Partner:', error);
+                console.error('❌ Fehler beim Laden der Partner:', error);
+                console.log('⚠️ Verwende Fallback-Partner');
                 // Fallback Partner anzeigen
                 displayFallbackPartners();
             }
@@ -551,13 +555,26 @@
 
         function displayPartners(partners) {
             const partnerGrid = document.getElementById('partnerGrid');
+            console.log('✅ displayPartners aufgerufen mit', partners.length, 'Partner');
+            console.log('✅ partnerGrid Element gefunden:', !!partnerGrid);
+
+            if (!partnerGrid) {
+                console.error('❌ partnerGrid Element nicht gefunden!');
+                return;
+            }
+
             partnerGrid.innerHTML = '';
 
             // Zeige alle Partner an (keine Limitierung mehr)
-            partners.forEach(partner => {
+            partners.forEach((partner, index) => {
                 const partnerCard = createPartnerCard(partner);
                 partnerGrid.appendChild(partnerCard);
+                if (index < 3) {
+                    console.log(`✅ Partner ${index + 1} hinzugefügt:`, partner.partnername);
+                }
             });
+
+            console.log('✅ Alle', partnerGrid.children.length, 'Partner wurden zum Grid hinzugefügt');
         }
 
         function createPartnerCard(partner) {
