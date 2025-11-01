@@ -72,8 +72,8 @@
     "adresse": "Am Pfisterhölzli 25, 8606 Greifensee, CH",
     "kanton": "Zürich",
     "homepage": "https://www.ms-w.ch/",
-    "lat": 47.3564,
-    "lng": 8.6786,
+    "lat": 47.3649,
+    "lng": 8.6888,
     "logos": "images/ID8.jpg"
   },
   {
@@ -83,8 +83,8 @@
     "adresse": "Sengelbachweg 21, 5000 Aarau, CH",
     "kanton": "Aargau",
     "homepage": "https://www.eva-couture.ch/start",
-    "lat": 47.3914,
-    "lng": 8.0458,
+    "lat": 47.3971, 
+    "lng": 8.0521,
     "logos": "images/ID9.jpg"
   },
   {
@@ -94,8 +94,8 @@
     "adresse": "Brennereistrasse 3, 4553 Subingen, CH",
     "kanton": "Solothurn",
     "homepage": "https://www.kidis-art.ch/",
-    "lat": 47.2167,
-    "lng": 7.6333,
+    "lat": 47.2000,
+    "lng": 7.6166,
     "logos": "images/ID10.jpg"
   },
   {
@@ -105,8 +105,8 @@
     "adresse": "Feierabendstrasse 46, 4051 Basel, CH",
     "kanton": "Basel-Stadt",
     "homepage": "https://www.zouts.ch/",
-    "lat": 47.5581,
-    "lng": 7.5903,
+    "lat": 47.5530, 
+    "lng": 7.5805,
     "logos": "images/ID11.jpg"
   },
   {
