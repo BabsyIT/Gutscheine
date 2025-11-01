@@ -2,64 +2,260 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=gutscheine.html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weiterleitung...</title>
+    <title>Gutscheine werden geladen... - Babsy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #a71a80;
+            --secondary-color: #009fad;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background: #f3f4f6;
-            color: #1f2937;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            overflow: hidden;
         }
-        .redirect-message {
+
+        .countdown-container {
             text-align: center;
             padding: 40px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
         }
-        .redirect-message i {
+
+        .gift-icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h1 {
             font-size: 48px;
-            color: #a71a80;
             margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
-        .redirect-message h1 {
-            color: #a71a80;
-            margin-bottom: 10px;
+
+        .message {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.9;
         }
-        .redirect-message p {
-            color: #6b7280;
-            margin-bottom: 20px;
+
+        .countdown-circle {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+            position: relative;
         }
-        .redirect-message a {
-            color: #009fad;
+
+        .countdown-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .circle-progress {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .circle-progress::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border-radius: 50%;
+            border: 8px solid transparent;
+            border-top-color: white;
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+
+        .dots {
+            display: inline-block;
+        }
+
+        .dots::after {
+            content: '.';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* Konfetti Animation */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: white;
+            position: absolute;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Verschiedene Konfetti-Farben */
+        .confetti:nth-child(1) { left: 10%; animation-delay: 0s; background: #ff6b6b; }
+        .confetti:nth-child(2) { left: 20%; animation-delay: 0.2s; background: #4ecdc4; }
+        .confetti:nth-child(3) { left: 30%; animation-delay: 0.4s; background: #ffe66d; }
+        .confetti:nth-child(4) { left: 40%; animation-delay: 0.6s; background: #a8e6cf; }
+        .confetti:nth-child(5) { left: 50%; animation-delay: 0.8s; background: #ff8b94; }
+        .confetti:nth-child(6) { left: 60%; animation-delay: 1s; background: #c7ceea; }
+        .confetti:nth-child(7) { left: 70%; animation-delay: 1.2s; background: #ffd3b6; }
+        .confetti:nth-child(8) { left: 80%; animation-delay: 1.4s; background: #ffaaa5; }
+        .confetti:nth-child(9) { left: 90%; animation-delay: 1.6s; background: #ff8b94; }
+        .confetti:nth-child(10) { left: 95%; animation-delay: 1.8s; background: #a8e6cf; }
+
+        .skip-link {
+            margin-top: 30px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
+            animation-delay: 1s;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .skip-link a {
+            color: white;
             text-decoration: none;
+            padding: 10px 20px;
+            border: 2px solid white;
+            border-radius: 25px;
+            transition: all 0.3s;
+            display: inline-block;
             font-weight: 600;
         }
-        .redirect-message a:hover {
-            text-decoration: underline;
+
+        .skip-link a:hover {
+            background: white;
+            color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        /* Mobile Optimierung */
+        @media (max-width: 768px) {
+            h1 { font-size: 36px; }
+            .gift-icon { font-size: 60px; }
+            .countdown-number { font-size: 80px; }
+            .countdown-circle, .circle-progress { width: 150px; height: 150px; }
+            .message { font-size: 18px; }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="redirect-message">
-        <i class="fas fa-sync-alt fa-spin"></i>
-        <h1>Weiterleitung...</h1>
-        <p>Sie werden automatisch zu <strong>Meine Gutscheine</strong> weitergeleitet.</p>
-        <p>Falls die Weiterleitung nicht funktioniert: <a href="gutscheine.html">Hier klicken</a></p>
+    <!-- Konfetti -->
+    <div class="confetti"></div>
+    <div class="confetti"></div>
+    <div class="confetti"></div>
+    <div class="confetti"></div>
+    <div class="confetti"></div>
+    <div class="confetti"></div>
+    <div class="confetti"></div>
+    <div class="confetti"></div>
+    <div class="confetti"></div>
+    <div class="confetti"></div>
+
+    <div class="countdown-container">
+        <div class="gift-icon">
+            <i class="fas fa-gift"></i>
+        </div>
+
+        <h1>Deine Gutscheine</h1>
+        <p class="message">Werden gleich für dich bereitgestellt!</p>
+
+        <div class="countdown-circle">
+            <div class="circle-progress"></div>
+            <div class="countdown-number" id="countdown">3</div>
+        </div>
+
+        <div class="loading-text">
+            Lade deine persönlichen Angebote<span class="dots"></span>
+        </div>
+
+        <div class="skip-link">
+            <a href="gutscheine.html">
+                <i class="fas fa-forward"></i> Direkt zu den Gutscheinen
+            </a>
+        </div>
     </div>
 
     <script>
-        // Fallback redirect after 0.5 seconds
-        setTimeout(function() {
-            window.location.href = 'gutscheine.html';
-        }, 500);
+        let count = 3;
+        const countdownElement = document.getElementById('countdown');
+
+        // Countdown-Funktion
+        const countdownInterval = setInterval(() => {
+            count--;
+
+            if (count > 0) {
+                countdownElement.textContent = count;
+            } else {
+                clearInterval(countdownInterval);
+                countdownElement.innerHTML = '<i class="fas fa-check"></i>';
+
+                // Nach kurzer Pause zur Gutscheine-Seite weiterleiten
+                setTimeout(() => {
+                    window.location.href = 'gutscheine.html';
+                }, 500);
+            }
+        }, 1000);
+
+        // Optionale Sound-Effekt (stumm, nur visuell)
+        // Bei Bedarf kann hier später ein Ton eingefügt werden
     </script>
 </body>
 </html>
