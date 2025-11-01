@@ -1,22 +1,44 @@
 # Babsy Gutschein-System Setup
 
-Dieses System verwendet **GitHub Actions** und **JSON-Dateien** für die zentrale Gutschein-Verwaltung - perfekt für eine Demo ohne komplexes Backend!
+Dieses System verwendet einen **hybriden Ansatz** mit **localStorage + JSON-Datenbank** - perfekt für eine Demo ohne komplexes Backend!
 
 ## 🎯 Wie es funktioniert
 
+### Hybrid Storage System:
+
+**Zwei Datenschichten**:
+1. **Zentrale Datenbank**: `data/vouchers.json` (Git-versioniert, für alle sichtbar)
+2. **Lokaler Speicher**: Browser localStorage (Offline-Fähigkeit, benutzerspezifisch)
+
 ### Datenfluss:
-1. **Kunde generiert Gutschein** auf der Webseite → Triggert GitHub Action
-2. **GitHub Action** fügt Gutschein zu `data/vouchers.json` hinzu
-3. **Beim Einlösen** (QR-Code scannen) → Triggert GitHub Action
-4. **GitHub Action** markiert Gutschein als eingelöst in `data/vouchers.json`
-5. **Babsy** sieht Statistiken im Admin-Dashboard (`admin.html`)
+
+**Beim Laden**:
+1. Lade Gutscheine aus `data/vouchers.json` (zentral)
+2. Lade Gutscheine aus localStorage (lokal)
+3. Merge: Alle zentralen + nur-lokale Gutscheine
+4. Zeige kombinierten Zustand an
+
+**Beim Speichern**:
+1. Speichere sofort in localStorage (offline-fähig)
+2. Markiere als "Pending Sync"
+3. Export-Funktion für manuelle Synchronisation
+4. Optional: GitHub Action für automatische Sync
+
+**Beim Einlösen (QR-Code)**:
+1. Kunde scannt Partner-QR-Code im Laden
+2. System validiert: Partner muss übereinstimmen
+3. Gutschein wird als eingelöst markiert
+4. Speicherung in beiden Schichten
+5. Babsy sieht Update im Admin-Dashboard
 
 ### Vorteile:
-- ✅ Keine Datenbank nötig
+- ✅ Keine Backend-Datenbank nötig
+- ✅ Funktioniert offline (localStorage)
+- ✅ Zentrale Auswertung möglich (data/vouchers.json)
 - ✅ Alles versioniert (Git-History)
 - ✅ Kostenlos (GitHub Actions Free Tier)
 - ✅ Nachvollziehbar (jede Änderung = Git Commit)
-- ✅ Demo-tauglich
+- ✅ Demo-tauglich mit echten Funktionen
 
 ## 📁 Dateistruktur
 
