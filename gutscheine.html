@@ -6,6 +6,8 @@
     <title>Meine Gutscheine - Babsy</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         :root {
             --primary-color: #a71a80;
@@ -350,6 +352,56 @@
             color: #6b7280;
         }
 
+        .btn-scan {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-scan:hover {
+            background: #007a85;
+        }
+
+        /* Scanner Modal */
+        #scannerModal .modal-content {
+            max-width: 600px;
+        }
+
+        #scanner-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #qr-reader {
+            width: 100%;
+        }
+
+        .scanner-status {
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .scanner-status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .scanner-status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .scanner-status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
         /* Header Navigation */
         .babsy-header {
             position: fixed;
@@ -538,10 +590,32 @@
         </div>
     </div>
 
+    <!-- Scanner Modal -->
+    <div class="modal" id="scannerModal">
+        <div class="modal-content">
+            <h2><i class="fas fa-qrcode"></i> Partner QR-Code scannen</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                Scannen Sie den QR-Code im Laden des Partners, um den Gutschein einzulösen
+            </p>
+            <div id="scanner-status" class="scanner-status info" style="display: none;">
+                Kamera wird gestartet...
+            </div>
+            <div id="scanner-container">
+                <div id="qr-reader"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeScanner()">
+                    <i class="fas fa-times"></i> Abbrechen
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let vouchers = [];
         let currentFilter = 'all';
         let selectedVoucher = null;
+        let html5QrcodeScanner = null;
 
         // Load vouchers from localStorage
         function loadVouchers() {
@@ -617,9 +691,15 @@
                         ` : ''}
                         <div class="voucher-actions">
                             ${!voucher.isRedeemed ? `
-                                <button class="btn-redeem" onclick="redeemVoucher('${voucher.id}')">
-                                    <i class="fas fa-check"></i> Einlösen
-                                </button>
+                                ${voucher.partnerType !== 'online' ? `
+                                    <button class="btn-scan" onclick="openScanner('${voucher.id}')">
+                                        <i class="fas fa-qrcode"></i> QR scannen
+                                    </button>
+                                ` : `
+                                    <button class="btn-scan" onclick="showVoucherCode('${voucher.id}')" title="Online-Partner: Code auf Website eingeben">
+                                        <i class="fas fa-globe"></i> Code zeigen
+                                    </button>
+                                `}
                                 <button class="btn-email" onclick="openEmailModal('${voucher.id}')">
                                     <i class="fas fa-envelope"></i> E-Mail
                                 </button>
@@ -670,9 +750,120 @@
             closeEmailModal();
         });
 
-        // Redeem voucher
+        // QR Code Scanner
+        function openScanner(voucherId) {
+            selectedVoucher = vouchers.find(v => v.id === voucherId);
+            if (!selectedVoucher) return;
+
+            document.getElementById('scannerModal').classList.add('active');
+            document.getElementById('scanner-status').style.display = 'block';
+            document.getElementById('scanner-status').className = 'scanner-status info';
+            document.getElementById('scanner-status').textContent = 'Kamera wird gestartet...';
+
+            // Initialize scanner
+            html5QrcodeScanner = new Html5Qrcode("qr-reader");
+
+            html5QrcodeScanner.start(
+                { facingMode: "environment" }, // Use back camera
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                onScanSuccess,
+                onScanError
+            ).then(() => {
+                document.getElementById('scanner-status').textContent = 'Bereit zum Scannen...';
+            }).catch(err => {
+                document.getElementById('scanner-status').className = 'scanner-status error';
+                document.getElementById('scanner-status').textContent = 'Kamera-Zugriff verweigert. Bitte erlauben Sie Kamera-Zugriff.';
+                console.error('Scanner start error:', err);
+            });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Stop scanning
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop();
+            }
+
+            // Parse QR code data
+            try {
+                const qrData = JSON.parse(decodedText);
+
+                // Validate: QR code must match partner name
+                if (qrData.partner === selectedVoucher.partner && qrData.type === 'BABSY_PARTNER') {
+                    // Success - redeem voucher
+                    document.getElementById('scanner-status').className = 'scanner-status success';
+                    document.getElementById('scanner-status').innerHTML = `
+                        <i class="fas fa-check-circle"></i> Gutschein erfolgreich eingelöst!<br>
+                        <small>Partner: ${qrData.partner}</small>
+                    `;
+
+                    // Redeem voucher
+                    selectedVoucher.isRedeemed = true;
+                    selectedVoucher.redeemedAt = new Date().toISOString();
+                    localStorage.setItem('babsy_vouchers', JSON.stringify(vouchers));
+
+                    // Close scanner after 2 seconds
+                    setTimeout(() => {
+                        closeScanner();
+                        loadVouchers();
+                    }, 2000);
+                } else {
+                    // Wrong partner
+                    document.getElementById('scanner-status').className = 'scanner-status error';
+                    document.getElementById('scanner-status').innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i> Falscher Partner!<br>
+                        <small>Dieser Gutschein ist für: ${selectedVoucher.partner}</small>
+                    `;
+                    setTimeout(() => {
+                        closeScanner();
+                    }, 3000);
+                }
+            } catch (e) {
+                // Invalid QR code format
+                document.getElementById('scanner-status').className = 'scanner-status error';
+                document.getElementById('scanner-status').innerHTML = `
+                    <i class="fas fa-times-circle"></i> Ungültiger QR-Code!<br>
+                    <small>Bitte scannen Sie den Partner-QR-Code</small>
+                `;
+                setTimeout(() => {
+                    closeScanner();
+                }, 3000);
+            }
+        }
+
+        function onScanError(errorMessage) {
+            // Scanner errors are normal during scanning, ignore them
+        }
+
+        function closeScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().catch(err => console.error('Scanner stop error:', err));
+                html5QrcodeScanner = null;
+            }
+            document.getElementById('scannerModal').classList.remove('active');
+            selectedVoucher = null;
+        }
+
+        // Show voucher code for online partners
+        function showVoucherCode(voucherId) {
+            const voucher = vouchers.find(v => v.id === voucherId);
+            if (!voucher) return;
+
+            alert(`🌐 Online-Partner Gutschein\n\n` +
+                  `Partner: ${voucher.partner}\n` +
+                  `Code: ${voucher.code}\n\n` +
+                  `Anleitung:\n` +
+                  `1. Besuchen Sie die Website des Partners\n` +
+                  `2. Geben Sie den Code im Checkout ein\n` +
+                  `3. Der Rabatt wird automatisch angewendet\n\n` +
+                  `Hinweis: Nutzen Sie diesen Code nur einmal.`);
+        }
+
+        // Redeem voucher (manual - for demo/testing)
         function redeemVoucher(voucherId) {
-            if (confirm('Möchten Sie diesen Gutschein einlösen?')) {
+            if (confirm('Möchten Sie diesen Gutschein manuell einlösen? (Normalerweise über QR-Code Scanner)')) {
                 const voucher = vouchers.find(v => v.id === voucherId);
                 if (voucher) {
                     voucher.isRedeemed = true;
@@ -699,6 +890,7 @@
                     id: 'demo-1',
                     code: 'BABSY-ETRI-2024',
                     partner: 'E-TriColor',
+                    partnerType: 'physical', // Physical store
                     description: '10% Rabatt auf alle Produkte',
                     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: false,
@@ -708,6 +900,7 @@
                     id: 'demo-2',
                     code: 'BABSY-UTA-5037',
                     partner: 'Uta Grütter Photography',
+                    partnerType: 'physical', // Physical studio
                     description: 'CHF 50.00 Rabatt auf Familienshooting',
                     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: false,
@@ -717,6 +910,7 @@
                     id: 'demo-3',
                     code: 'BABSY-KIDS-8142',
                     partner: 'KidisArt',
+                    partnerType: 'online', // Online shop
                     description: '10% Rabatt auf das gesamte Sortiment',
                     createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: true,
@@ -726,6 +920,7 @@
                     id: 'demo-4',
                     code: 'BABSY-ZOUTS-3921',
                     partner: 'ZOUTS!',
+                    partnerType: 'online', // Online service
                     description: '10% Rabatt mit Code babsy10',
                     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: false,
@@ -735,6 +930,7 @@
                     id: 'demo-5',
                     code: 'BABSY-BABY-6754',
                     partner: 'Babycomeback',
+                    partnerType: 'physical', // Physical store (has both online and offline)
                     description: '10% Rabatt online und offline',
                     createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: true,
@@ -744,7 +940,7 @@
 
             localStorage.setItem('babsy_vouchers', JSON.stringify(demoVouchers));
             loadVouchers();
-            alert('Demo-Daten wurden hinzugefügt! 5 Gutscheine (3 aktiv, 2 eingelöst)');
+            alert('Demo-Daten wurden hinzugefügt!\n\n5 Gutscheine:\n- 3 aktiv (2x physisch, 1x online)\n- 2 eingelöst');
         }
 
         // Clear all vouchers
