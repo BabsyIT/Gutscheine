@@ -14,14 +14,74 @@
 
         body {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            padding-top: 80px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f5f5f5;
+        }
+
+        /* Header Navigation */
+        .babsy-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .babsy-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .babsy-logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .babsy-nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .babsy-nav-links a {
+            text-decoration: none;
+            color: #1f2937;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .babsy-nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .babsy-mobile-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary-color);
+            cursor: pointer;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
 
         h1 {
@@ -137,6 +197,25 @@
     </style>
 </head>
 <body>
+    <!-- Header Navigation -->
+    <header class="babsy-header">
+        <nav class="babsy-nav">
+            <a href="index.html" class="babsy-logo">
+                <i class="fas fa-ticket-alt"></i> Babsy Partnergutscheine
+            </a>
+            <ul class="babsy-nav-links" id="navLinks">
+                <li><a href="index.html">🏠 Home</a></li>
+                <li><a href="countdown.html">🎫 Meine Gutscheine</a></li>
+                <li><a href="karte.html">🗺️ Partner-Karte</a></li>
+                <li><a href="partner-qrcodes.html">🖨️ Partner QR-Codes</a></li>
+                <li><a href="admin.html">📊 Admin Dashboard</a></li>
+            </ul>
+            <button class="babsy-mobile-menu" id="mobileMenu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+    </header>
+
     <div class="container">
         <h1><i class="fas fa-qrcode"></i> Partner QR-Codes</h1>
         <p class="subtitle">QR-Codes für Partner zum Ausdrucken und Aufhängen im Laden</p>
