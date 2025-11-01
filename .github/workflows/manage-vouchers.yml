@@ -1,0 +1,72 @@
+name: Manage Vouchers
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - generate
+          - redeem
+      voucher_id:
+        description: 'Voucher ID (for redeem)'
+        required: false
+        type: string
+      partner_name:
+        description: 'Partner Name (for generate)'
+        required: false
+        type: string
+      customer_id:
+        description: 'Customer ID/Email'
+        required: false
+        type: string
+      description:
+        description: 'Voucher Description (for generate)'
+        required: false
+        type: string
+
+jobs:
+  manage-voucher:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate Voucher
+        if: github.event.inputs.action == 'generate'
+        run: |
+          node scripts/generate-voucher.js \
+            "${{ github.event.inputs.partner_name }}" \
+            "${{ github.event.inputs.customer_id }}" \
+            "${{ github.event.inputs.description }}"
+
+      - name: Redeem Voucher
+        if: github.event.inputs.action == 'redeem'
+        run: |
+          node scripts/redeem-voucher.js \
+            "${{ github.event.inputs.voucher_id }}" \
+            "${{ github.event.inputs.customer_id }}"
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/vouchers.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "🎫 Voucher ${{ github.event.inputs.action }}: ${{ github.event.inputs.partner_name || github.event.inputs.voucher_id }}"
+            git push
+          fi
