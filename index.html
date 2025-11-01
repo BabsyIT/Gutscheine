@@ -553,7 +553,8 @@
             const partnerGrid = document.getElementById('partnerGrid');
             partnerGrid.innerHTML = '';
 
-            partners.slice(0, 6).forEach(partner => {
+            // Zeige alle Partner an (keine Limitierung mehr)
+            partners.forEach(partner => {
                 const partnerCard = createPartnerCard(partner);
                 partnerGrid.appendChild(partnerCard);
             });
@@ -565,6 +566,11 @@
             
             const logoText = partner.partnername.charAt(0).toUpperCase();
             
+            // Kürze die Beschreibung auf 120 Zeichen
+            const shortDescription = partner.beschreibung_de.length > 120 
+                ? partner.beschreibung_de.substring(0, 120) + '...' 
+                : partner.beschreibung_de;
+            
             card.innerHTML = `
                 <div class="partner-header">
                     <div class="partner-logo">${logoText}</div>
@@ -574,14 +580,16 @@
                     </div>
                 </div>
                 <div class="partner-content">
-                    <p class="partner-description">${partner.beschreibung_de.substring(0, 150)}...</p>
+                    <p class="partner-description">${shortDescription}</p>
                     <p class="partner-address">
                         <i class="fas fa-map-marker-alt"></i> ${partner.adresse}
                     </p>
                     <div class="partner-actions">
-                        <a href="${partner.homepage}" target="_blank" class="btn btn-secondary btn-small">
-                            <i class="fas fa-external-link-alt"></i> Website
-                        </a>
+                        ${partner.homepage && partner.homepage !== 'NaN' ? `
+                            <a href="${partner.homepage}" target="_blank" class="btn btn-secondary btn-small">
+                                <i class="fas fa-external-link-alt"></i> Website
+                            </a>
+                        ` : ''}
                     </div>
                 </div>
             `;
