@@ -583,17 +583,22 @@
         function createPartnerCard(partner) {
             const card = document.createElement('div');
             card.className = 'partner-card fade-in';
-            
+
             const logoText = partner.partnername.charAt(0).toUpperCase();
-            
+
             // Kürze die Beschreibung auf 120 Zeichen
-            const shortDescription = partner.beschreibung_de.length > 120 
-                ? partner.beschreibung_de.substring(0, 120) + '...' 
+            const shortDescription = partner.beschreibung_de.length > 120
+                ? partner.beschreibung_de.substring(0, 120) + '...'
                 : partner.beschreibung_de;
-            
+
+            // Logo HTML: zeige Bild wenn vorhanden, sonst Initialbuchstabe
+            const logoHtml = partner.logos
+                ? `<img src="${partner.logos}" alt="${partner.partnername}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"><div style="display:none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: white;">${logoText}</div>`
+                : logoText;
+
             card.innerHTML = `
                 <div class="partner-header">
-                    <div class="partner-logo">${logoText}</div>
+                    <div class="partner-logo">${logoHtml}</div>
                     <div class="partner-info">
                         <h3>${partner.partnername}</h3>
                         <span class="partner-category">${partner.category}</span>

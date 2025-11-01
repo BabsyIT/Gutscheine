@@ -538,7 +538,12 @@
 
         // Create popup content
         function createPopupContent(partner) {
-            const logoHtml = partner.partnername.charAt(0);
+            const logoText = partner.partnername.charAt(0);
+
+            // Logo HTML: zeige Bild wenn vorhanden, sonst Initialbuchstabe
+            const logoHtml = partner.logos
+                ? `<img src="${partner.logos}" alt="${partner.partnername}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"><div style="display:none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: white;">${logoText}</div>`
+                : logoText;
 
             return `
                 <div class="popup-content">
@@ -590,9 +595,14 @@
 
             const logoText = partner.partnername.charAt(0).toUpperCase();
 
+            // Logo HTML: zeige Bild wenn vorhanden, sonst Initialbuchstabe
+            const logoHtml = partner.logos
+                ? `<img src="${partner.logos}" alt="${partner.partnername}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"><div style="display:none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: #009fad;">${logoText}</div>`
+                : logoText;
+
             card.innerHTML = `
                 <div class="list-card-header">
-                    <div class="list-card-logo">${logoText}</div>
+                    <div class="list-card-logo">${logoHtml}</div>
                     <div class="list-card-info">
                         <h3>${partner.partnername}</h3>
                         <span class="list-card-category">${partner.category}</span>
