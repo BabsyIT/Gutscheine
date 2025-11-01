@@ -1,0 +1,423 @@
+/* Gemeinsame Styles für alle Babsy Partnergutscheine Seiten */
+
+/* Reset und Basis Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: linear-gradient(135deg, #89cdd3 0%, #a71a80 100%);
+    min-height: 100vh;
+}
+
+/* Farbvariablen */
+:root {
+    --primary-color: #a71a80;
+    --secondary-color: #009fad;
+    --tertiary-color: #89cdd3;
+    --text-color: #333;
+    --text-light: #666;
+    --text-muted: #999;
+    --background-overlay: rgba(255, 255, 255, 0.95);
+    --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 5px 20px rgba(0, 0, 0, 0.1);
+    --border-radius: 15px;
+    --border-radius-small: 8px;
+    --transition-fast: 0.3s;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header Styles */
+.babsy-header {
+    background: var(--background-overlay);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-light);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+.babsy-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.babsy-logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.babsy-nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+}
+
+.babsy-nav-links a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: color var(--transition-fast);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-small);
+}
+
+.babsy-nav-links a:hover {
+    color: var(--primary-color);
+    background: rgba(167, 26, 128, 0.1);
+}
+
+.babsy-mobile-menu {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+/* Button Styles */
+.babsy-btn {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.babsy-btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.babsy-btn-primary:hover {
+    background: #8f1570;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(167, 26, 128, 0.3);
+}
+
+.babsy-btn-secondary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.babsy-btn-secondary:hover {
+    background: #007a85;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 159, 173, 0.3);
+}
+
+.babsy-btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    border-radius: 20px;
+}
+
+/* Card Styles */
+.babsy-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-medium);
+    transition: transform var(--transition-fast);
+    overflow: hidden;
+}
+
+.babsy-card:hover {
+    transform: translateY(-5px);
+}
+
+.babsy-card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.babsy-card-content {
+    padding: 1.5rem;
+}
+
+.babsy-card-footer {
+    padding: 1rem 1.5rem;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+}
+
+/* Form Styles */
+.babsy-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.babsy-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.babsy-form-input, .babsy-form-select, .babsy-form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e1e5e9;
+    border-radius: var(--border-radius-small);
+    font-size: 1rem;
+    transition: border-color var(--transition-fast);
+}
+
+.babsy-form-input:focus, .babsy-form-select:focus, .babsy-form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Loading Animation */
+.babsy-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #89cdd3 0%, #a71a80 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s;
+}
+
+.babsy-loading.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.babsy-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: babsy-spin 1s linear infinite;
+}
+
+@keyframes babsy-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animation Classes */
+.babsy-fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s, transform 0.6s;
+}
+
+.babsy-fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Modal Styles */
+.babsy-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-fast);
+}
+
+.babsy-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.babsy-modal-content {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.babsy-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.babsy-modal-close:hover {
+    color: var(--text-color);
+}
+
+/* Alert Styles */
+.babsy-alert {
+    padding: 1rem;
+    border-radius: var(--border-radius-small);
+    margin-bottom: 1rem;
+}
+
+.babsy-alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.babsy-alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.babsy-alert-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Toast Notifications */
+.babsy-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--primary-color);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-small);
+    box-shadow: var(--shadow-medium);
+    z-index: 1001;
+    transform: translateX(400px);
+    transition: transform var(--transition-fast);
+}
+
+.babsy-toast.show {
+    transform: translateX(0);
+}
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.p-3 { padding: 1.5rem; }
+.p-4 { padding: 2rem; }
+
+.d-flex { display: flex; }
+.d-block { display: block; }
+.d-none { display: none; }
+
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.align-center { align-items: center; }
+
+.gap-1 { gap: 0.5rem; }
+.gap-2 { gap: 1rem; }
+.gap-3 { gap: 1.5rem; }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .babsy-nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        flex-direction: column;
+        padding: 1rem;
+        box-shadow: var(--shadow-light);
+    }
+
+    .babsy-nav-links.active {
+        display: flex;
+    }
+
+    .babsy-mobile-menu {
+        display: block;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+
+    .babsy-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .babsy-modal-content {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Print Styles */
+@media print {
+    .babsy-header,
+    .babsy-mobile-menu,
+    .babsy-toast {
+        display: none;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+}
