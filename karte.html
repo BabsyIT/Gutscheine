@@ -280,7 +280,7 @@
 
         .custom-marker {
             background: var(--secondary-color, #009fad);
-            border: 3px solid #a71a80;
+            border: 3px solid a71a80;
             border-radius: 50%;
             width: 36px;
             height: 36px;
@@ -448,196 +448,35 @@
     </div>
 
     <script>
-        // Partner Daten - erweitert mit allen Partnern aus partners.json
-        const partners = [
-            {
-                partnername: "E-TriColor",
-                category: "Print & Druck",
-                beschreibung_de: "Babsy Kunden erhalten einen Rabatt von 10% auf alle Produkte mit dem Stichwort BABSY bei unserer Hausdruckerei E-Tricolor",
-                adresse: "Margarethenstrasse 47, 4053 Basel, CH",
-                homepage: "https://www.e-tricolor.ch/",
-                lat: 47.5596,
-                lng: 7.5886
-            },
-            {
-                partnername: "proinsura",
-                category: "Versicherungen",
-                beschreibung_de: "proinsura ist der Hauptpartner für den Babsy Treuhand-Partner Trusty-Treuhand der sich um Versicherungen kümmert",
-                adresse: "Violaweg 73, 4303 Kaiseraugst, CH",
-                homepage: "https://www.proinsura.ch/",
-                lat: 47.5389,
-                lng: 7.7222
-            },
-            {
-                partnername: "PartyOn",
-                category: "Event & Veranstaltungen",
-                beschreibung_de: "Der Licht- und Tonanlagen-Profi von PartyOn gibt allen Babsy-Kunden einen Nachlass von 10% auf seine Dienstleistungen",
-                adresse: "Weidenweg 28, 4303 Kaiseraugst, CH",
-                homepage: "https://partyon.ch/",
-                lat: 47.5439,
-                lng: 7.7222
-            },
-            {
-                partnername: "Zangger Websolutions",
-                category: "IT & Web",
-                beschreibung_de: "Das Zangger-Team erstellt Homepages mit viel Liebe und Detail. Babsy-Kunden erhalten einen einmaligen Sonder-Rabatt von CHF 200",
-                adresse: "Zürcherstrasse 350, 8500 Frauenfeld, CH",
-                homepage: "https://ihrewebagentur.ch/",
-                lat: 47.5536,
-                lng: 8.8989
-            },
-            {
-                partnername: "Uta Grütter Photography",
-                category: "Fotografie",
-                beschreibung_de: "Die unglaublich gute Fotografin Uta Grütter bietet für Familienshootings einen Rabatt von CHF 50.00 für Babsy-Mitglieder",
-                adresse: "Schützenmattstrasse 37, 4051 Basel, CH",
-                homepage: "https://www.uta-gruetter-photographie.ch/",
-                lat: 47.5646,
-                lng: 7.5886
-            },
-            {
-                partnername: "seniors@work",
-                category: "Arbeit & Personal",
-                beschreibung_de: "Babsy-Members erhalten für ein Profil auf seniors@work einen einmaligen Gutschein in der Höhe von 15% mit dem Code babsy",
-                adresse: "Tessinerplatz 7, 8004 Zürich, CH",
-                homepage: "https://www.seniorsatwork.ch/",
-                lat: 47.3769,
-                lng: 8.5312
-            },
-            {
-                partnername: "Medical Services Weimann",
-                category: "Gesundheit & Medizin",
-                beschreibung_de: "Umfassende Dienstleistungen im Bereich der Notfallmedizin. Familien erhalten einen Rabatt von 10% auf Kurse bei Angabe des Stichwortes Babsy",
-                adresse: "Am Pfisterhölzli 25, 8606 Greifensee, CH",
-                homepage: "https://www.ms-w.ch/",
-                lat: 47.3564,
-                lng: 8.6786
-            },
-            {
-                partnername: "Evas Couture",
-                category: "Handwerk & Kreatives",
-                beschreibung_de: "Nähkurse für Anfänger und Fortgeschrittene. Babsy-Mitglieder profitieren von einem 10%-igen Rabatt auf Evas Kurse",
-                adresse: "Sengelbachweg 21, 5000 Aarau, CH",
-                homepage: "https://www.eva-couture.ch/start",
-                lat: 47.3914,
-                lng: 8.0458
-            },
-            {
-                partnername: "KidisArt",
-                category: "Kinder & Spielwaren",
-                beschreibung_de: "Shop für Basteln und Malen für Kinder und Erwachsene. Für alle Babsy-Mitglieder gibt es einen 10% Rabatt auf das gesamte Sortiment",
-                adresse: "Brennereistrasse 3, 4553 Subingen, CH",
-                homepage: "https://www.kidis-art.ch/",
-                lat: 47.2167,
-                lng: 7.6333
-            },
-            {
-                partnername: "ZOUTS!",
-                category: "Kinder & Familie",
-                beschreibung_de: "Mit dem Code babsy10 bekommen unsere Babsy-Mitglieder 10% Rabatt auf alle Abos von ZOUTS!",
-                adresse: "Feierabendstrasse 46, 4051 Basel, CH",
-                homepage: "https://www.zouts.ch/",
-                lat: 47.5581,
-                lng: 7.5903
-            },
-            {
-                partnername: "quitt",
-                category: "Arbeit & Personal",
-                beschreibung_de: "Mit dem Code BABSYQUITT profitieren Sie von Startguthaben bei quitt: Start CHF 20.-, Comfort CHF 40.-, Flat CHF 80.-",
-                adresse: "Birmensdorferstrasse 94, 8003 Zürich, CH",
-                homepage: "https://quitt.ch/",
-                lat: 47.3753,
-                lng: 8.5167
-            },
-            {
-                partnername: "Babycomeback",
-                category: "Kinder & Familie",
-                beschreibung_de: "Plattform für neue und secondhand Kleider und Accessoires für Babys und Kinder. 10% Rabatt für Babsy-Members mit dem Code: BABSY",
-                adresse: "Rümelinsplatz 7, 4001 Basel, CH",
-                homepage: "https://www.babycomeback.ch/",
-                lat: 47.5569,
-                lng: 7.5881
-            },
-            {
-                partnername: "UBS helpetica",
-                category: "Finanzen & Banking",
-                beschreibung_de: "Wir arbeiten in partnerschaftlicher Abstimmung mit dem Freiwilligen-Netzwerk UBS Helpetica zusammen",
-                adresse: "Bahnhofstrasse 45, 8098 Zürich, CH",
-                homepage: "https://ubs-helpetica.ch/de/",
-                lat: 47.3667,
-                lng: 8.5400
-            },
-            {
-                partnername: "Fidares",
-                category: "Treuhand & Beratung",
-                beschreibung_de: "Fidares ist der neue Treuhand-Partner von Treuhand-Trusty für alle administrativen Tasks rund um Babsy",
-                adresse: "Netzibodenstr. 23 D, 4133 Pratteln, CH",
-                homepage: "https://www.fidares.com/index.html",
-                lat: 47.5214,
-                lng: 7.6919
-            },
-            {
-                partnername: "spielwaren zauber.ch",
-                category: "Kinder & Spielwaren",
-                beschreibung_de: "Der virtuelle Shop für Spielwaren bietet einen Rabatt in der Höhe von 6% auf alle online-Käufe mit dem Code Babsy 2024",
-                adresse: "Zwillikerstrasse 64, 8908 Hedingen, CH",
-                homepage: "https://www.spielwarenzauber.ch/",
-                lat: 47.3039,
-                lng: 8.4839
-            },
-            {
-                partnername: "Salomea.ch",
-                category: "Beratung & Coaching",
-                beschreibung_de: "Expertin für Kinderwunsch und Geburtsvorbereitungen. Mit dem Stichwort BABSY bekommt man einen Rabatt von 30%",
-                adresse: "Schaffhauserrheinweg 55, 4058 Basel, CH",
-                homepage: "https://www.salomea.ch/",
-                lat: 47.5689,
-                lng: 7.6147
-            },
-            {
-                partnername: "KinderYoga",
-                category: "Sport & Wellness",
-                beschreibung_de: "Mit CHF 8 für eine Lektion mehr als 30% Rabatt! Jetzt anmelden und mitteilen, dass ihr von Babsy seid!",
-                adresse: "Bruderholzallee 169, 4059 Basel, CH",
-                homepage: "mailto:isabellekatharinavionnet@gmail.com",
-                lat: 47.5303,
-                lng: 7.5850
-            },
-            {
-                partnername: "Stickerella",
-                category: "Kinder & Spielwaren",
-                beschreibung_de: "20% Rabatt auf alle Sticker auf Stickerella.ch für die Babsy-Mitglieder mit BABSY025",
-                adresse: "Wildischachen 18, 5200 Brugg, CH",
-                homepage: "https://stickerella.ch/",
-                lat: 47.4811,
-                lng: 8.2089
-            },
-            {
-                partnername: "Maria Alejandra Jimenez",
-                category: "Beratung & Coaching",
-                beschreibung_de: "Violin- und Musikunterricht. Maria bietet einen 15% Rabatt für den ersten Monat eines Kurses an",
-                adresse: "Bläsiring 130, 4057 Basel, CH",
-                homepage: "https://mariaalejandrajimenez.com/",
-                lat: 47.5486,
-                lng: 7.5897
-            },
-            {
-                partnername: "Concordia",
-                category: "Versicherungen",
-                beschreibung_de: "Unser Partner für Krankenversicherungslösungen, speziell für Familien. Eine genossenschaftliche Versicherung",
-                adresse: "Pilatusstrasse 20, 6003 Luzern, CH",
-                homepage: "https://www.concordia.ch/de.html",
-                lat: 47.0502,
-                lng: 8.3093
-            }
-        ];
-
+        // Partner Daten - werden aus partners.json geladen
+        let partners = [];
         let map;
         let markers = [];
         let currentView = 'map';
 
+        // Partner aus JSON laden
+        async function loadPartnersData() {
+            try {
+                const response = await fetch('partners.json');
+                partners = await response.json();
+                console.log(`${partners.length} Partner erfolgreich geladen`);
+                return true;
+            } catch (error) {
+                console.error('Fehler beim Laden der Partner:', error);
+                return false;
+            }
+        }
+
         // Initialize map
-        function initMap() {
+        async function initMap() {
+            // Erst Partner laden
+            const loaded = await loadPartnersData();
+            
+            if (!loaded) {
+                console.error('Partner konnten nicht geladen werden');
+                return;
+            }
+
             map = L.map('map').setView([47.3769, 8.5417], 8);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -652,7 +491,10 @@
         function loadPartners() {
             clearMarkers();
             
-            partners.forEach((partner, index) => {
+            // Nur Partner mit GPS-Koordinaten anzeigen
+            const mappablePartners = partners.filter(p => p.lat && p.lng);
+            
+            mappablePartners.forEach((partner, index) => {
                 const marker = L.marker([partner.lat, partner.lng], {
                     icon: L.divIcon({
                         className: 'custom-marker',
@@ -706,7 +548,10 @@
             const listContainer = document.getElementById('list-container');
             listContainer.innerHTML = '';
 
-            partners.forEach(partner => {
+            // Nur Partner mit GPS-Koordinaten anzeigen (für Konsistenz mit Karte)
+            const mappablePartners = partners.filter(p => p.lat && p.lng);
+
+            mappablePartners.forEach(partner => {
                 const card = createListCard(partner);
                 listContainer.appendChild(card);
             });
@@ -772,7 +617,9 @@
 
         // Update legend
         function updateLegend() {
-            document.getElementById('partner-count').textContent = partners.length;
+            // Zähle nur Partner mit GPS-Koordinaten
+            const mappablePartners = partners.filter(p => p.lat && p.lng);
+            document.getElementById('partner-count').textContent = mappablePartners.length;
         }
 
         // Mobile Menu Toggle
@@ -848,7 +695,10 @@
                 return;
             }
 
-            const matchingPartner = partners.find(partner => 
+            // Suche nur unter Partnern mit GPS-Koordinaten
+            const mappablePartners = partners.filter(p => p.lat && p.lng);
+            
+            const matchingPartner = mappablePartners.find(partner => 
                 partner.partnername.toLowerCase().includes(searchTerm) ||
                 partner.category.toLowerCase().includes(searchTerm) ||
                 partner.adresse.toLowerCase().includes(searchTerm)
