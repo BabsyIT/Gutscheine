@@ -116,8 +116,8 @@
     "adresse": "Birmensdorferstrasse 94, 8003 Zürich, CH",
     "kanton": "Zürich",
     "homepage": "https://quitt.ch/",
-    "lat": 47.3753,
-    "lng": 8.5167,
+    "lat": 47.3710,
+    "lng": 8.5225,
     "logos": "images/ID12.jpg"
   },
   {
@@ -127,8 +127,8 @@
     "adresse": "Rümelinsplatz 7, 4001 Basel, CH",
     "kanton": "Basel-Stadt",
     "homepage": "https://www.babycomeback.ch/",
-    "lat": 47.5569,
-    "lng": 7.5881,
+    "lat": 47.5567,
+    "lng": 7.5874,
     "logos": "images/ID13.jpg"
   },
   {
@@ -138,8 +138,8 @@
     "adresse": "Bahnhofstrasse 45, 8098 Zürich, CH",
     "kanton": "Zürich",
     "homepage": "https://ubs-helpetica.ch/de/",
-    "lat": 47.3667,
-    "lng": 8.5400,
+    "lat": 47.3720,
+    "lng": 8.5382,
     "logos": "images/ID14.jpg"
   },
   {
@@ -149,8 +149,8 @@
     "adresse": "Netzibodenstr. 23 D, 4133 Pratteln, CH",
     "kanton": "Basel-Landschaft",
     "homepage": "https://www.fidares.com/index.html",
-    "lat": 47.5214,
-    "lng": 7.6919,
+    "lat": 47.5329, 
+    "lng": 7.7038,
     "logos": "images/ID15.jpg"
   },
   {
@@ -160,8 +160,8 @@
     "adresse": "Zwillikerstrasse 64, 8908 Hedingen, CH",
     "kanton": "Zürich",
     "homepage": "https://www.spielwarenzauber.ch/",
-    "lat": 47.3039,
-    "lng": 8.4839,
+    "lat": 47.2935, 
+    "lng": 8.4455,
     "logos": "images/ID16.jpg"
   },
   {
@@ -171,8 +171,8 @@
     "adresse": "Schaffhauserrheinweg 55, 4058 Basel, CH",
     "kanton": "Basel-Stadt",
     "homepage": "https://www.salomea.ch/",
-    "lat": 47.5689,
-    "lng": 7.6147,
+    "lat": 47.5574,
+    "lng": 7.6013,
     "logos": "images/ID17.jpg"
   },
   {
@@ -182,8 +182,8 @@
     "adresse": "Bruderholzallee 169, 4059 Basel, CH",
     "kanton": "Basel-Stadt",
     "homepage": "mailto:isabellekatharinavionnet@gmail.com",
-    "lat": 47.5303,
-    "lng": 7.5850,
+    "lat": 47.5329,
+    "lng": 7.5946,
     "logos": "images/ID18.jpg"
   },
   {
@@ -193,8 +193,8 @@
     "adresse": "Wildischachen 18, 5200 Brugg, CH",
     "kanton": "Aargau",
     "homepage": "https://stickerella.ch/",
-    "lat": 47.4811,
-    "lng": 8.2089,
+    "lat": 47.4682,
+    "lng": 8.1829,
     "logos": "images/ID19.jpg"
   },
   {
@@ -204,8 +204,8 @@
     "adresse": "Bläsiring 130, 4057 Basel, CH",
     "kanton": "Basel-Stadt",
     "homepage": "https://mariaalejandrajimenez.com/",
-    "lat": 47.5486,
-    "lng": 7.5897,
+    "lat": 47.5685,
+    "lng": 7.5939,
     "logos": "images/ID20.jpg"
   },
   {
@@ -215,8 +215,8 @@
     "adresse": "Pilatusstrasse 20, 6003 Luzern, CH",
     "kanton": "Luzern",
     "homepage": "https://www.concordia.ch/de.html",
-    "lat": 47.0502,
-    "lng": 8.3093,
+    "lat": 47.0488,
+    "lng": 8.3057,
     "logos": "images/ID21.jpg"
   }
 ]
