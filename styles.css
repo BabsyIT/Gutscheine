@@ -378,6 +378,7 @@ body {
         flex-direction: column;
         padding: 1rem;
         box-shadow: var(--shadow-light);
+        z-index: 9999;
     }
 
     .babsy-nav-links.active {
