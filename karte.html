@@ -1022,13 +1022,14 @@
                 isRedeemed: false
             };
 
-            // Save to user-specific localStorage
-            const userStorageKey = `babsy_vouchers_${user.userId}`;
-            let vouchers = JSON.parse(localStorage.getItem(userStorageKey) || '[]');
-            vouchers.push(voucher);
-            localStorage.setItem(userStorageKey, JSON.stringify(vouchers));
+            // Save to pending export queue (NO localStorage per user)
+            const pendingExportStr = localStorage.getItem('pending_vouchers_export') || '[]';
+            let allPendingVouchers = JSON.parse(pendingExportStr);
+            allPendingVouchers.push(voucher);
+            localStorage.setItem('pending_vouchers_export', JSON.stringify(allPendingVouchers));
 
             console.log(`Gutschein generiert für ${user.type}:`, user.name, ':', voucher);
+            console.log('💾 Gutschein in Export-Queue gespeichert - Export erforderlich');
 
             // Send email notification
             if (window.emailService) {
@@ -1042,13 +1043,13 @@
                         partner
                     );
 
-                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${user.name} (${user.username})\nTyp: ${user.type}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.\n\n📧 Eine Bestätigungs-E-Mail wurde an ${user.email} versendet.`);
+                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${user.name} (${user.username})\nTyp: ${user.type}\n\n✅ Der Gutschein wurde gespeichert.\n📧 Eine Bestätigungs-E-Mail wurde an ${user.email} versendet.\n\n⚠️ WICHTIG: Besuchen Sie code.html oder gutscheine.html und klicken Sie auf "Export PDF", um die Daten zu sichern!`);
                 } catch (error) {
                     console.error('Email error:', error);
-                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${user.name} (${user.username})\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.\n\n⚠️ E-Mail konnte nicht versendet werden (siehe Konsole).`);
+                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${user.name} (${user.username})\n\n✅ Der Gutschein wurde gespeichert.\n⚠️ E-Mail konnte nicht versendet werden (siehe Konsole).\n\n⚠️ WICHTIG: Besuchen Sie code.html oder gutscheine.html und klicken Sie auf "Export PDF", um die Daten zu sichern!`);
                 }
             } else {
-                alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${user.name} (${user.username})\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.`);
+                alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${user.name} (${user.username})\n\n✅ Der Gutschein wurde gespeichert.\n\n⚠️ WICHTIG: Besuchen Sie code.html oder gutscheine.html und klicken Sie auf "Export PDF", um die Daten zu sichern!`);
             }
         }
 

@@ -989,28 +989,43 @@
             const currentUser = JSON.parse(session);
 
             try {
-                // Load ONLY from central database (vouchers.json)
+                // Load from central database (vouchers.json)
                 const response = await fetch('data/vouchers.json?t=' + Date.now());
                 const centralData = await response.json();
 
                 console.log('🔍 DEBUG GUTSCHEINE.HTML:');
                 console.log('  Current User:', currentUser);
 
-                // Filter vouchers for current user
-                vouchers = centralData.vouchers.filter(v =>
+                // Filter vouchers for current user from central DB
+                const centralVouchers = centralData.vouchers.filter(v =>
                     v.userId === currentUser.userId ||
                     v.customerId === currentUser.username ||
                     v.customerId === currentUser.userId
-                ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                );
 
-                console.log(`📊 Gutscheine für ${currentUser.name} geladen: ${vouchers.length} aus vouchers.json`);
+                // Load pending vouchers (newly created, not yet exported)
+                const pendingExportStr = localStorage.getItem('pending_vouchers_export') || '[]';
+                const allPendingVouchers = JSON.parse(pendingExportStr);
+                const pendingVouchers = allPendingVouchers.filter(v =>
+                    v.userId === currentUser.userId ||
+                    v.customerId === currentUser.username ||
+                    v.customerId === currentUser.userId
+                );
+
+                // Merge: Use pending vouchers if they exist (override central DB)
+                const voucherMap = new Map();
+                centralVouchers.forEach(v => voucherMap.set(v.id, v));
+                pendingVouchers.forEach(v => voucherMap.set(v.id, v));
+
+                vouchers = Array.from(voucherMap.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                console.log(`📊 Gutscheine für ${currentUser.name} geladen: ${vouchers.length} (${centralVouchers.length} zentral, ${pendingVouchers.length} ausstehend)`);
 
                 // Check for pending export changes
-                const pendingExport = localStorage.getItem('pending_vouchers_export');
-                const hasPendingChanges = pendingExport && pendingExport !== '[]';
+                const hasPendingChanges = pendingVouchers.length > 0;
 
                 if (hasPendingChanges) {
-                    syncStatusEl.innerHTML = `<i class="fas fa-sync-alt"></i> Änderungen ausstehend - Export erforderlich`;
+                    syncStatusEl.innerHTML = `<i class="fas fa-sync-alt"></i> ${pendingVouchers.length} Änderung(en) ausstehend - Export erforderlich`;
                     syncStatusEl.style.color = '#f59e0b';
                 } else {
                     syncStatusEl.innerHTML = `<i class="fas fa-check-circle"></i> Mit zentraler Datenbank synchronisiert`;
