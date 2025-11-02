@@ -741,20 +741,76 @@
             return code;
         }
 
+        // Authenticate user by username across all auth sources
+        async function authenticateUser(username) {
+            try {
+                // Try Mitglieder
+                const memberResponse = await fetch('data/mitglieder-auth.json');
+                const memberData = await memberResponse.json();
+                const member = memberData.members.find(m => m.username === username);
+
+                if (member) {
+                    return {
+                        userId: member.id,
+                        username: member.username,
+                        name: member.name,
+                        email: member.email || `${member.username}@babsy.ch`,
+                        type: 'member'
+                    };
+                }
+
+                // Try Partner
+                const partnerResponse = await fetch('data/partners-auth.json');
+                const partnerData = await partnerResponse.json();
+                const partner = partnerData.partners.find(p => p.username === username);
+
+                if (partner) {
+                    return {
+                        userId: partner.id,
+                        username: partner.username,
+                        name: partner.partnerName,
+                        email: partner.contactEmail,
+                        type: 'partner'
+                    };
+                }
+
+                // Try Employee/Admin
+                const employeeResponse = await fetch('data/users.json');
+                const employeeData = await employeeResponse.json();
+                const employee = employeeData.users.find(u => u.username === username);
+
+                if (employee) {
+                    return {
+                        userId: employee.id,
+                        username: employee.username,
+                        name: employee.name,
+                        email: `${employee.username}@babsy.ch`,
+                        type: 'employee'
+                    };
+                }
+
+                return null;
+            } catch (error) {
+                console.error('Authentication error:', error);
+                return null;
+            }
+        }
+
         // Generate voucher for partner
         async function generateVoucher(partnerName, description) {
-            // Prompt for user email
-            const userId = prompt('Bitte geben Sie Ihre E-Mail-Adresse ein:');
+            // Prompt for username
+            const username = prompt('Bitte geben Sie Ihren Benutzernamen ein:');
 
-            if (!userId || userId.trim() === '') {
-                alert('Gutschein-Generierung abgebrochen. Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+            if (!username || username.trim() === '') {
+                alert('Gutschein-Generierung abgebrochen. Bitte geben Sie einen Benutzernamen ein.');
                 return;
             }
 
-            // Validate email format
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(userId.trim())) {
-                alert('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+            // Authenticate user
+            const user = await authenticateUser(username.trim());
+
+            if (!user) {
+                alert('Benutzername nicht gefunden. Bitte versuchen Sie es erneut.\n\nGültige Benutzernamen:\n- Mitglieder: mitglied1, mitglied2, demo\n- Partner: etricolor, kidisart, etc.\n- Mitarbeiter: admin, mitarbeiter');
                 return;
             }
 
@@ -766,20 +822,23 @@
                 description: description,
                 partner: partnerName,
                 value: description,
-                userId: userId.trim(),
-                customerId: userId.trim(),
+                userId: user.userId,
+                customerId: user.username,
+                userName: user.name,
+                userEmail: user.email,
+                userType: user.type,
                 createdAt: new Date().toISOString(),
                 redeemedAt: '',
                 isRedeemed: false
             };
 
             // Save to user-specific localStorage
-            const userStorageKey = `babsy_vouchers_${userId.trim()}`;
+            const userStorageKey = `babsy_vouchers_${user.userId}`;
             let vouchers = JSON.parse(localStorage.getItem(userStorageKey) || '[]');
             vouchers.push(voucher);
             localStorage.setItem(userStorageKey, JSON.stringify(vouchers));
 
-            console.log('Gutschein generiert für Benutzer', userId, ':', voucher);
+            console.log(`Gutschein generiert für ${user.type}:`, user.name, ':', voucher);
 
             // Send email notification
             if (window.emailService) {
@@ -791,18 +850,18 @@
                     }
 
                     await emailService.sendVoucherGeneratedEmail(
-                        userId.trim(),
+                        user.email,
                         voucher,
                         partnerInfo
                     );
 
-                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nE-Mail: ${userId}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.\n\n📧 Eine Bestätigungs-E-Mail wurde versendet.`);
+                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${user.name} (${user.username})\nTyp: ${user.type}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.\n\n📧 Eine Bestätigungs-E-Mail wurde an ${user.email} versendet.`);
                 } catch (error) {
                     console.error('Email error:', error);
-                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nE-Mail: ${userId}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.\n\n⚠️ E-Mail konnte nicht versendet werden (siehe Konsole).`);
+                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${user.name} (${user.username})\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.\n\n⚠️ E-Mail konnte nicht versendet werden (siehe Konsole).`);
                 }
             } else {
-                alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nE-Mail: ${userId}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.`);
+                alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${user.name} (${user.username})\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.`);
             }
         }
     </script>
