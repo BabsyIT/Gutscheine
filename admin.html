@@ -497,6 +497,20 @@
         </div>
 
         <div id="content" style="display: none;">
+            <!-- Info Banner (shown when no vouchers) -->
+            <div id="noVouchersInfo" style="display: none; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-info-circle" style="font-size: 32px; color: #f59e0b;"></i>
+                    <div>
+                        <h3 style="margin: 0 0 10px 0; color: #92400e;">Noch keine Gutscheine vorhanden</h3>
+                        <p style="margin: 0; color: #78350f;">
+                            Erstellen Sie Gutscheine auf der <a href="karte.html" style="color: #92400e; font-weight: bold;">Partner-Karte</a>
+                            oder laden Sie <a href="gutscheine.html" style="color: #92400e; font-weight: bold;">Demo-Daten</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card total">
@@ -654,22 +668,46 @@
             try {
                 // Collect all vouchers from localStorage (all users)
                 const allVouchers = [];
+                let voucherKeys = [];
+
+                console.log('🔍 Scanning localStorage for vouchers...');
+                console.log('Total localStorage keys:', localStorage.length);
 
                 // Iterate through all localStorage keys
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
+                    console.log(`Key ${i}:`, key);
 
                     // Check if this is a voucher storage key
                     if (key && key.startsWith('babsy_vouchers_')) {
+                        voucherKeys.push(key);
+                        console.log('✅ Found voucher key:', key);
                         try {
                             const userVouchers = JSON.parse(localStorage.getItem(key));
+                            console.log('  Vouchers in this key:', userVouchers);
                             if (Array.isArray(userVouchers)) {
                                 allVouchers.push(...userVouchers);
+                                console.log(`  Added ${userVouchers.length} vouchers`);
+                            } else {
+                                console.warn('  Not an array:', typeof userVouchers);
                             }
                         } catch (e) {
-                            console.warn('Failed to parse vouchers from key:', key, e);
+                            console.error('Failed to parse vouchers from key:', key, e);
                         }
                     }
+                }
+
+                console.log('📊 Summary:');
+                console.log('  Voucher keys found:', voucherKeys.length);
+                console.log('  Total vouchers:', allVouchers.length);
+
+                // Show message if no vouchers found
+                if (allVouchers.length === 0) {
+                    console.warn('⚠️ No vouchers found in localStorage!');
+                    console.log('💡 Tip: Generate some vouchers first on karte.html or gutscheine.html');
+                    document.getElementById('noVouchersInfo').style.display = 'block';
+                } else {
+                    document.getElementById('noVouchersInfo').style.display = 'none';
                 }
 
                 // Calculate stats
@@ -683,7 +721,7 @@
                 document.getElementById('redeemedCount').textContent = redeemedCount;
 
                 // Calculate partner count
-                const partners = [...new Set(allVouchers.map(v => v.partner))];
+                const partners = [...new Set(allVouchers.map(v => v.partner).filter(p => p))];
                 document.getElementById('partnerCount').textContent = partners.length;
 
                 // Partner statistics
