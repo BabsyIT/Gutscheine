@@ -1,0 +1,25 @@
+{
+  "members": [
+    {
+      "id": "member1",
+      "username": "mitglied1",
+      "password": "mitglied123",
+      "name": "Max Mustermann",
+      "email": "max@example.com"
+    },
+    {
+      "id": "member2",
+      "username": "mitglied2",
+      "password": "mitglied123",
+      "name": "Anna Müller",
+      "email": "anna@example.com"
+    },
+    {
+      "id": "member3",
+      "username": "demo",
+      "password": "demo123",
+      "name": "Demo Mitglied",
+      "email": "demo@mitglied.ch"
+    }
+  ]
+}

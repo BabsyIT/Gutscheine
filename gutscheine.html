@@ -487,9 +487,216 @@
                 display: block;
             }
         }
+
+        /* Login Modal */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .login-modal {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 90%;
+        }
+
+        .login-modal h2 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .login-modal .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .user-type-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .user-type-tab {
+            flex: 1;
+            padding: 12px;
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .user-type-tab:hover {
+            background: #e5e7eb;
+        }
+
+        .user-type-tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            color: #374151;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .login-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #851566;
+            transform: translateY(-2px);
+        }
+
+        .login-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 90px;
+            right: 30px;
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .logout-btn:hover {
+            background: #4b5563;
+        }
+
+        .user-welcome {
+            text-align: center;
+            background: #f0f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        @media print {
+            .logout-btn,
+            .user-welcome {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Login Modal -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-modal">
+            <h2><i class="fas fa-lock"></i> Anmeldung</h2>
+            <p class="subtitle">Bitte wähle deinen Benutzertyp und melde dich an</p>
+
+            <div class="user-type-tabs">
+                <div class="user-type-tab active" data-type="member" onclick="selectUserType('member')">
+                    <i class="fas fa-user"></i><br>Mitglied
+                </div>
+                <div class="user-type-tab" data-type="partner" onclick="selectUserType('partner')">
+                    <i class="fas fa-store"></i><br>Partner
+                </div>
+                <div class="user-type-tab" data-type="employee" onclick="selectUserType('employee')">
+                    <i class="fas fa-user-tie"></i><br>Mitarbeiter
+                </div>
+            </div>
+
+            <form class="login-form" id="loginForm">
+                <div class="login-error" id="loginError">
+                    Ungültige Zugangsdaten
+                </div>
+                <div class="form-group">
+                    <label for="username">Benutzername</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Passwort</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Anmelden
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Logout Button -->
+    <button class="logout-btn" id="logoutBtn" onclick="logout()" style="display: none;">
+        <i class="fas fa-sign-out-alt"></i> Abmelden
+    </button>
+
     <!-- Header Navigation -->
     <header class="babsy-header">
         <nav class="babsy-nav container">
@@ -622,6 +829,141 @@
         let currentFilter = 'all';
         let selectedVoucher = null;
         let html5QrcodeScanner = null;
+        let currentUserType = 'member'; // Default user type
+
+        // Authentication
+        function checkAuth() {
+            const session = localStorage.getItem('babsy_voucher_session');
+            if (!session) {
+                showLogin();
+                return false;
+            }
+
+            try {
+                const sessionData = JSON.parse(session);
+                const loginTime = new Date(sessionData.loginTime);
+                const now = new Date();
+                const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+
+                // Session expires after 8 hours
+                if (hoursSinceLogin > 8) {
+                    localStorage.removeItem('babsy_voucher_session');
+                    showLogin();
+                    return false;
+                }
+
+                // Show logout button and user welcome
+                document.getElementById('logoutBtn').style.display = 'flex';
+
+                // Add welcome message
+                const container = document.querySelector('.container');
+                const welcomeDiv = document.createElement('div');
+                welcomeDiv.className = 'user-welcome';
+
+                let roleIcon = '<i class="fas fa-user"></i>';
+                let roleText = 'Mitglied';
+                if (sessionData.userType === 'partner') {
+                    roleIcon = '<i class="fas fa-store"></i>';
+                    roleText = 'Partner';
+                } else if (sessionData.userType === 'employee') {
+                    roleIcon = '<i class="fas fa-user-tie"></i>';
+                    roleText = 'Mitarbeiter';
+                }
+
+                welcomeDiv.innerHTML = `
+                    ${roleIcon}
+                    Angemeldet als <strong>${sessionData.name}</strong> (${roleText})
+                `;
+                container.insertBefore(welcomeDiv, container.firstChild);
+
+                hideLogin();
+                return true;
+            } catch (error) {
+                localStorage.removeItem('babsy_voucher_session');
+                showLogin();
+                return false;
+            }
+        }
+
+        function selectUserType(type) {
+            currentUserType = type;
+            document.querySelectorAll('.user-type-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            document.getElementById('loginError').classList.remove('show');
+        }
+
+        function showLogin() {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.querySelector('.container').style.display = 'none';
+        }
+
+        function hideLogin() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+        }
+
+        function logout() {
+            localStorage.removeItem('babsy_voucher_session');
+            location.reload();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('loginError');
+
+            try {
+                let authFile, userKey, user;
+
+                // Load appropriate auth file based on user type
+                if (currentUserType === 'member') {
+                    const response = await fetch('data/mitglieder-auth.json');
+                    const data = await response.json();
+                    user = data.members.find(m => m.username === username && m.password === password);
+                    userKey = 'members';
+                } else if (currentUserType === 'partner') {
+                    const response = await fetch('data/partners-auth.json');
+                    const data = await response.json();
+                    user = data.partners.find(p => p.username === username && p.password === password);
+                    userKey = 'partners';
+                } else if (currentUserType === 'employee') {
+                    const response = await fetch('data/users.json');
+                    const data = await response.json();
+                    user = data.users.find(u => u.username === username && u.password === password);
+                    userKey = 'users';
+                }
+
+                if (user) {
+                    // Create session
+                    const session = {
+                        userId: user.id,
+                        username: user.username,
+                        name: user.name || user.partnerName,
+                        userType: currentUserType,
+                        loginTime: new Date().toISOString()
+                    };
+
+                    localStorage.setItem('babsy_voucher_session', JSON.stringify(session));
+
+                    // Clear form
+                    document.getElementById('loginForm').reset();
+                    errorEl.classList.remove('show');
+
+                    // Reload page
+                    location.reload();
+                } else {
+                    errorEl.classList.add('show');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorEl.textContent = 'Fehler beim Login. Bitte versuche es erneut.';
+                errorEl.classList.add('show');
+            }
+        });
 
         // Load vouchers from BOTH localStorage AND central database
         async function loadVouchers() {
@@ -1069,7 +1411,9 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             setupMobileMenu();
-            loadVouchers();
+            if (checkAuth()) {
+                loadVouchers();
+            }
         });
     </script>
 </body>
