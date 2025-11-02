@@ -16,7 +16,9 @@
 
 3 Code einloesen  <script src="https://cdn.tailwindcss.com"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script src="js/github-sync.js"></script> 
 
   <style> 
 
@@ -180,10 +182,20 @@
 
      <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-bold">Meine Gutscheine</h2>
-      <button onclick="exportVouchersJSON()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-       Export PDF
-      </button>
+      <div class="flex gap-2">
+       <button onclick="gitHubSync.autoSync().then(() => { showToast('Sync erfolgreich!', 'success'); loadVouchers(); }).catch(err => showToast('Sync fehlgeschlagen: ' + err.message, 'error'))" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2" title="Automatisch mit GitHub synchronisieren">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        Auto-Sync
+       </button>
+       <button onclick="gitHubSync.showConfigDialog()" class="px-4 py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center gap-2" title="GitHub Sync konfigurieren">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        Config
+       </button>
+       <button onclick="exportVouchersPDF()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2" title="Exportiert als PDF zum Ausdrucken">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+        PDF
+       </button>
+      </div>
      </div>
 
      <div id="voucher-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><!-- Vouchers will be rendered here --> 
@@ -729,8 +741,76 @@
       return true;
     }
 
+    // Export vouchers.json for manual upload
+    function exportVouchersDataJSON() {
+      const pendingExportStr = localStorage.getItem('pending_vouchers_export') || '[]';
+      const allPendingVouchers = JSON.parse(pendingExportStr);
+
+      // Merge with existing vouchers.json data
+      fetch('data/vouchers.json?t=' + Date.now())
+        .then(res => res.json())
+        .then(centralData => {
+          // Merge: pending vouchers override central ones
+          const voucherMap = new Map();
+          centralData.vouchers.forEach(v => voucherMap.set(v.id, v));
+          allPendingVouchers.forEach(v => voucherMap.set(v.id, v));
+
+          const mergedVouchers = Array.from(voucherMap.values());
+
+          const dataToExport = {
+            vouchers: mergedVouchers,
+            lastUpdated: new Date().toISOString(),
+            stats: {
+              total: mergedVouchers.length,
+              active: mergedVouchers.filter(v => !v.isRedeemed).length,
+              redeemed: mergedVouchers.filter(v => v.isRedeemed).length
+            }
+          };
+
+          const dataStr = JSON.stringify(dataToExport, null, 2);
+          const dataBlob = new Blob([dataStr], { type: 'application/json' });
+          const url = URL.createObjectURL(dataBlob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'vouchers.json';
+          link.click();
+          URL.revokeObjectURL(url);
+
+          // Clear pending queue after export
+          if (confirm('Export erfolgreich!\n\nMöchten Sie die ausstehenden Änderungen als synchronisiert markieren?\n\n(Die Datei wurde heruntergeladen. Bitte ersetzen Sie damit data/vouchers.json)')) {
+            localStorage.removeItem('pending_vouchers_export');
+            showToast('Änderungen als synchronisiert markiert', 'success');
+            loadVouchers(); // Reload to update sync status
+          }
+        })
+        .catch(error => {
+          console.error('Fehler beim Laden von vouchers.json:', error);
+          // Fallback: export only pending vouchers
+          const dataToExport = {
+            vouchers: allPendingVouchers,
+            lastUpdated: new Date().toISOString(),
+            stats: {
+              total: allPendingVouchers.length,
+              active: allPendingVouchers.filter(v => !v.isRedeemed).length,
+              redeemed: allPendingVouchers.filter(v => v.isRedeemed).length
+            }
+          };
+
+          const dataStr = JSON.stringify(dataToExport, null, 2);
+          const dataBlob = new Blob([dataStr], { type: 'application/json' });
+          const url = URL.createObjectURL(dataBlob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'vouchers.json';
+          link.click();
+          URL.revokeObjectURL(url);
+
+          showToast('Nur neue Gutscheine exportiert (zentrale DB nicht erreichbar)', 'warning');
+        });
+    }
+
     // Export vouchers as PDF
-    function exportVouchersJSON() {
+    function exportVouchersPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
 
