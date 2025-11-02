@@ -694,7 +694,7 @@
         // Partner aus JSON laden
         async function loadPartnersData() {
             try {
-                const response = await fetch('partners.json');
+                const response = await fetch('data/partners.json');
                 partners = await response.json();
                 console.log(`${partners.length} Partner erfolgreich geladen`);
                 // Optional: sobald Daten geladen sind, kannst du Kategorien vorbereiten oder UI aktualisieren
