@@ -17,21 +17,23 @@
         body {
             margin: 0;
             padding: 0;
-            padding-top: 80px;
+            padding-top: 0; /* Kein Padding - Header ist fixed */
         }
 
         #map-container {
             position: relative;
             width: 100%;
-            height: calc(100vh - 80px);
+            height: 100vh;
+            padding-top: 100px; /* Platz für Header + Suchfeld */
+            box-sizing: border-box;
         }
 
         .search-filter-bar {
-            position: absolute;
-            top: 20px; /* Relativ zum map-container (der schon 80px vom Top entfernt ist) */
+            position: fixed; /* Fixed statt absolute, damit es über dem Header bleibt */
+            top: 90px; /* Direkt unter dem Header (ca. 70-80px Headerhöhe + Abstand) */
             left: 50%;
             transform: translateX(-50%);
-            z-index: 900;
+            z-index: 1100; /* Höher als Header (1000) */
             display: flex;
             gap: 10px;
             align-items: center;
@@ -93,10 +95,10 @@
         }
 
         .view-toggle {
-            position: absolute;
-            top: 80px; /* Unter dem Suchfeld, damit nichts verdeckt wird */
+            position: fixed; /* Fixed wie Suchfeld */
+            top: 90px; /* Gleiche Höhe wie Suchfeld */
             left: 20px;
-            z-index: 900;
+            z-index: 1100;
             display: flex;
             background: white;
             border-radius: 25px;
@@ -145,7 +147,7 @@
             overflow-y: auto;
             background: #f5f5f5;
             padding: 20px;
-            padding-top: 80px;
+            padding-top: 160px; /* Platz für Header + Suchfeld + View Toggle */
             display: none;
         }
 
