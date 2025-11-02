@@ -21,17 +21,50 @@ Das Babsy Gutschein-System funktioniert nun wie ein echtes produktives System mi
 
 ## Demo-Ablauf
 
-### 1. Demo-Daten laden
+### 1. Login / Authentifizierung
+
+Alle geschützten Seiten erfordern jetzt eine Anmeldung:
+
+#### Gutscheine-Seite (gutscheine.html)
+**3 Benutzertypen verfügbar**:
+
+**👤 Mitglied** (Standard):
+- Benutzername: `demo` / Passwort: `demo123`
+- Benutzername: `mitglied1` / Passwort: `mitglied123`
+
+**🏪 Partner**:
+- Benutzername: `demo` / Passwort: `demo123`
+- Benutzername: `etricolor` / Passwort: `partner123`
+- Benutzername: `kidisart` / Passwort: `partner123`
+
+**👔 Mitarbeiter**:
+- Benutzername: `admin` / Passwort: `babsy2025`
+- Benutzername: `mitarbeiter` / Passwort: `babsy123`
+
+#### Admin Dashboard (admin.html)
+**Nur für Mitarbeiter**:
+- Benutzername: `admin` / Passwort: `babsy2025`
+- Benutzername: `mitarbeiter` / Passwort: `babsy123`
+
+#### Partner QR-Codes (partner-qrcodes.html)
+**Nur für Partner**:
+- Benutzername: `demo` / Passwort: `demo123`
+- Benutzername: `etricolor` / Passwort: `partner123`
+
+**Session-Dauer**: 8 Stunden (dann automatischer Logout)
+
+### 2. Demo-Daten laden
 
 **Seite**: [gutscheine.html](https://babsyit.github.io/Gutscheine/gutscheine.html)
 
-1. Klicken Sie auf **"Demo-Daten laden"**
-2. Es werden 5 Beispiel-Gutscheine erstellt:
+1. Melden Sie sich an (z.B. als Mitglied mit `demo` / `demo123`)
+2. Klicken Sie auf **"Demo-Daten laden"**
+3. Es werden 5 Beispiel-Gutscheine erstellt:
    - 3 aktive Gutscheine (2x physisch, 1x online)
    - 2 eingelöste Gutscheine
-3. **Status-Anzeige** zeigt: "5 lokale Änderung(en) | Sync zur zentralen DB ausstehend"
+4. **Status-Anzeige** zeigt: "5 lokale Änderung(en) | Sync zur zentralen DB ausstehend"
 
-### 2. Gutscheine ansehen
+### 3. Gutscheine ansehen
 
 Die Gutschein-Karten zeigen:
 - ✅ **Aktiv** (grün) oder ✅ **Eingelöst** (grau)
@@ -40,12 +73,13 @@ Die Gutschein-Karten zeigen:
 - Beschreibung
 - Erstellt am / Eingelöst am
 
-### 3. QR-Code Scanning (Physische Partner)
+### 4. QR-Code Scanning (Physische Partner)
 
 **Beispiel**: E-TriColor, Uta Grütter Photography, Babycomeback
 
 1. Öffnen Sie [partner-qrcodes.html](https://babsyit.github.io/Gutscheine/partner-qrcodes.html)
-2. Suchen Sie den Partner (z.B. E-TriColor)
+2. Melden Sie sich als Partner an (z.B. `etricolor` / `partner123`)
+3. Suchen Sie den Partner (z.B. E-TriColor)
 3. **Demo-Szenario**:
    - In der Realität: Kunde scannt QR-Code im Laden
    - Für die Demo: Screenshot vom QR-Code machen
@@ -58,7 +92,7 @@ Die Gutschein-Karten zeigen:
 
 **Wichtig**: Der QR-Code muss zum Partner passen! Sonst erscheint: "Falscher Partner!"
 
-### 4. Online-Gutschein einlösen
+### 5. Online-Gutschein einlösen
 
 **Beispiel**: KidisArt, ZOUTS!
 
@@ -70,7 +104,7 @@ Die Gutschein-Karten zeigen:
    3. Der Rabatt wird automatisch angewendet
    ```
 
-### 5. Zentrale Synchronisation (Demo)
+### 6. Zentrale Synchronisation (Demo)
 
 **Zwei Varianten**:
 
@@ -98,11 +132,12 @@ Die Gutschein-Karten zeigen:
    - Voucher Code (bei redeem): z.B. "BABSY-ETRI-2024"
 5. Das Workflow updated automatisch `data/vouchers.json`
 
-### 6. Admin Dashboard ansehen
+### 7. Admin Dashboard ansehen
 
 **Seite**: [admin.html](https://babsyit.github.io/Gutscheine/admin.html)
 
-Zeigt Babsy's Perspektive:
+1. Melden Sie sich als Mitarbeiter an (z.B. `admin` / `babsy2025`)
+2. Zeigt Babsy's Perspektive:
 - 📊 **Statistiken**: Gesamt / Aktiv / Eingelöst / Partner
 - 🏪 **Partner-Breakdown**: Gutscheine pro Partner
 - 📋 **Vollständige Tabelle**: Alle Gutscheine mit Status
@@ -219,12 +254,16 @@ Das System funktioniert auch ohne Internet:
 | Feature | Demo | Produktion |
 |---------|------|------------|
 | Datenbank | JSON-Datei | PostgreSQL/MongoDB |
-| Authentifizierung | Keine | OAuth/JWT |
+| Authentifizierung | Basis (JSON-basiert) | OAuth/JWT + Password-Hashing |
+| Benutzerverwaltung | Statische JSON-Dateien | Dynamisches User-Management |
+| Passwort-Sicherheit | Klartext (nur Demo!) | Bcrypt/Argon2 Hashing |
 | Sync | Manuell | Automatisch |
 | E-Mail Versand | Simuliert | Echt (SendGrid/AWS SES) |
 | Partner-API | Keine | REST API |
 | Analytics | Basis | Google Analytics/Mixpanel |
 | Backup | Git History | Cloud Backup |
+
+**⚠️ Sicherheitshinweis**: Die Demo-Authentifizierung verwendet Passwörter im Klartext und ist NUR für Demonstrationszwecke geeignet. In Produktion müssen Passwörter gehasht werden!
 
 ## Nächste Schritte für Produktion
 
