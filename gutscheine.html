@@ -979,26 +979,42 @@
         async function loadVouchers() {
             const syncStatusEl = document.getElementById('syncStatus');
 
+            // Get current user session
+            const session = localStorage.getItem('babsy_voucher_session');
+            if (!session) {
+                console.error('No session found');
+                return;
+            }
+            const currentUser = JSON.parse(session);
+
             try {
                 // Load from central database
                 const response = await fetch('data/vouchers.json');
                 const centralData = await response.json();
 
-                // Load from localStorage
-                const localStored = localStorage.getItem('babsy_vouchers');
+                // Load from localStorage with user-specific key
+                const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
+                const localStored = localStorage.getItem(userStorageKey);
                 const localVouchers = localStored ? JSON.parse(localStored) : [];
 
+                // Filter central vouchers for current user
+                const userCentralVouchers = centralData.vouchers.filter(v =>
+                    v.userId === currentUser.userId ||
+                    v.customerId === currentUser.username ||
+                    v.customerId === currentUser.userId
+                );
+
                 // Merge: Central vouchers + local-only vouchers
-                const centralIds = new Set(centralData.vouchers.map(v => v.id));
+                const centralIds = new Set(userCentralVouchers.map(v => v.id));
                 const localOnlyVouchers = localVouchers.filter(v => !centralIds.has(v.id));
 
                 // Combined list
-                vouchers = [...centralData.vouchers, ...localOnlyVouchers];
+                vouchers = [...userCentralVouchers, ...localOnlyVouchers];
 
-                console.log(`📊 Gutscheine geladen: ${centralData.vouchers.length} zentral, ${localOnlyVouchers.length} nur lokal`);
+                console.log(`📊 Gutscheine für ${currentUser.name} geladen: ${userCentralVouchers.length} zentral, ${localOnlyVouchers.length} nur lokal`);
 
                 // Show sync status
-                const hasPendingSync = localStorage.getItem('babsy_vouchers_pending_sync') === 'true';
+                const hasPendingSync = localStorage.getItem(`babsy_vouchers_pending_sync_${currentUser.userId}`) === 'true';
                 if (localOnlyVouchers.length > 0 || hasPendingSync) {
                     syncStatusEl.innerHTML = `<i class="fas fa-sync-alt"></i> ${localOnlyVouchers.length} lokale Änderung(en) | Sync zur zentralen DB ausstehend`;
                     syncStatusEl.style.color = '#f59e0b';
@@ -1009,8 +1025,9 @@
 
             } catch (error) {
                 console.warn('⚠️ Zentrale Datenbank nicht erreichbar, verwende nur localStorage:', error);
-                // Fallback: nur localStorage
-                const stored = localStorage.getItem('babsy_vouchers');
+                // Fallback: nur localStorage with user-specific key
+                const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
+                const stored = localStorage.getItem(userStorageKey);
                 vouchers = stored ? JSON.parse(stored) : [];
 
                 syncStatusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Offline-Modus - Nur lokale Gutscheine`;
@@ -1262,11 +1279,20 @@
 
         // Save voucher changes to both localStorage and prepare for central sync
         async function saveVoucherChanges() {
-            // Always save to localStorage for offline capability
-            localStorage.setItem('babsy_vouchers', JSON.stringify(vouchers));
+            // Get current user session
+            const session = localStorage.getItem('babsy_voucher_session');
+            if (!session) {
+                console.error('No session found');
+                return false;
+            }
+            const currentUser = JSON.parse(session);
+
+            // Always save to localStorage with user-specific key for offline capability
+            const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
+            localStorage.setItem(userStorageKey, JSON.stringify(vouchers));
 
             // Mark that there are pending changes for central sync
-            localStorage.setItem('babsy_vouchers_pending_sync', 'true');
+            localStorage.setItem(`babsy_vouchers_pending_sync_${currentUser.userId}`, 'true');
 
             console.log('💾 Gutscheine lokal gespeichert, Sync zur zentralen DB ausstehend');
 
@@ -1325,9 +1351,17 @@
 
         // Add demo data (for testing)
         async function addDemoData() {
+            // Get current user session
+            const session = localStorage.getItem('babsy_voucher_session');
+            if (!session) {
+                alert('Fehler: Keine Sitzung gefunden. Bitte melden Sie sich erneut an.');
+                return;
+            }
+            const currentUser = JSON.parse(session);
+
             const demoVouchers = [
                 {
-                    id: 'demo-1',
+                    id: `demo-${currentUser.userId}-1`,
                     code: 'BABSY-ETRI-2024',
                     partner: 'E-TriColor',
                     partnerType: 'physical', // Physical store
@@ -1335,10 +1369,11 @@
                     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: false,
                     redeemedAt: '',
-                    customerId: 'demo@babsy.ch'
+                    userId: currentUser.userId,
+                    customerId: currentUser.username
                 },
                 {
-                    id: 'demo-2',
+                    id: `demo-${currentUser.userId}-2`,
                     code: 'BABSY-UTA-5037',
                     partner: 'Uta Grütter Photography',
                     partnerType: 'physical', // Physical studio
@@ -1346,10 +1381,11 @@
                     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: false,
                     redeemedAt: '',
-                    customerId: 'demo@babsy.ch'
+                    userId: currentUser.userId,
+                    customerId: currentUser.username
                 },
                 {
-                    id: 'demo-3',
+                    id: `demo-${currentUser.userId}-3`,
                     code: 'BABSY-KIDS-8142',
                     partner: 'KidisArt',
                     partnerType: 'online', // Online shop
@@ -1358,10 +1394,11 @@
                     isRedeemed: true,
                     redeemedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
                     redeemedBy: 'KidisArt',
-                    customerId: 'demo@babsy.ch'
+                    userId: currentUser.userId,
+                    customerId: currentUser.username
                 },
                 {
-                    id: 'demo-4',
+                    id: `demo-${currentUser.userId}-4`,
                     code: 'BABSY-ZOUTS-3921',
                     partner: 'ZOUTS!',
                     partnerType: 'online', // Online service
@@ -1369,10 +1406,11 @@
                     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
                     isRedeemed: false,
                     redeemedAt: '',
-                    customerId: 'demo@babsy.ch'
+                    userId: currentUser.userId,
+                    customerId: currentUser.username
                 },
                 {
-                    id: 'demo-5',
+                    id: `demo-${currentUser.userId}-5`,
                     code: 'BABSY-BABY-6754',
                     partner: 'Babycomeback',
                     partnerType: 'physical', // Physical store (has both online and offline)
@@ -1381,7 +1419,8 @@
                     isRedeemed: true,
                     redeemedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
                     redeemedBy: 'Babycomeback',
-                    customerId: 'demo@babsy.ch'
+                    userId: currentUser.userId,
+                    customerId: currentUser.username
                 }
             ];
 
@@ -1395,7 +1434,13 @@
         // Clear all vouchers
         function clearAllVouchers() {
             if (confirm('Möchten Sie wirklich alle Gutscheine löschen?')) {
-                localStorage.removeItem('babsy_vouchers');
+                const session = localStorage.getItem('babsy_voucher_session');
+                if (session) {
+                    const currentUser = JSON.parse(session);
+                    const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
+                    localStorage.removeItem(userStorageKey);
+                    localStorage.removeItem(`babsy_vouchers_pending_sync_${currentUser.userId}`);
+                }
                 loadVouchers();
             }
         }
