@@ -391,6 +391,107 @@
     </div>
 
     <script>
+        // Authentication
+        function checkAuth() {
+            const session = localStorage.getItem('babsy_partner_session');
+            if (!session) {
+                showLogin();
+                return false;
+            }
+
+            try {
+                const sessionData = JSON.parse(session);
+                const loginTime = new Date(sessionData.loginTime);
+                const now = new Date();
+                const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+
+                // Session expires after 8 hours
+                if (hoursSinceLogin > 8) {
+                    localStorage.removeItem('babsy_partner_session');
+                    showLogin();
+                    return false;
+                }
+
+                // Show logout button and partner welcome
+                document.getElementById('logoutBtn').style.display = 'flex';
+
+                // Add welcome message
+                const container = document.querySelector('.container');
+                const welcomeDiv = document.createElement('div');
+                welcomeDiv.className = 'partner-welcome';
+                welcomeDiv.innerHTML = `
+                    <i class="fas fa-user-circle"></i>
+                    Willkommen, <strong>${sessionData.partnerName}</strong>
+                `;
+                container.insertBefore(welcomeDiv, container.firstChild);
+
+                hideLogin();
+                return true;
+            } catch (error) {
+                localStorage.removeItem('babsy_partner_session');
+                showLogin();
+                return false;
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.querySelector('.container').style.display = 'none';
+        }
+
+        function hideLogin() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+        }
+
+        function logout() {
+            localStorage.removeItem('babsy_partner_session');
+            location.reload();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('loginError');
+
+            try {
+                const response = await fetch('data/partners-auth.json');
+                const data = await response.json();
+
+                const partner = data.partners.find(p =>
+                    p.username === username && p.password === password
+                );
+
+                if (partner) {
+                    // Create session
+                    const session = {
+                        partnerId: partner.id,
+                        username: partner.username,
+                        partnerName: partner.partnerName,
+                        contactEmail: partner.contactEmail,
+                        loginTime: new Date().toISOString()
+                    };
+
+                    localStorage.setItem('babsy_partner_session', JSON.stringify(session));
+
+                    // Clear form
+                    document.getElementById('loginForm').reset();
+                    errorEl.classList.remove('show');
+
+                    // Reload page
+                    location.reload();
+                } else {
+                    errorEl.classList.add('show');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorEl.textContent = 'Fehler beim Login. Bitte versuche es erneut.';
+                errorEl.classList.add('show');
+            }
+        });
+
         // Load partners from data/partners.json
         async function loadPartners() {
             try {
@@ -463,7 +564,11 @@
         }
 
         // Load partners on page load
-        document.addEventListener('DOMContentLoaded', loadPartners);
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                loadPartners();
+            }
+        });
     </script>
 </body>
 </html>
