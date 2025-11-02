@@ -988,35 +988,28 @@
             const currentUser = JSON.parse(session);
 
             try {
-                // Load from central database
-                const response = await fetch('data/vouchers.json');
+                // Load ONLY from central database (vouchers.json)
+                const response = await fetch('data/vouchers.json?t=' + Date.now());
                 const centralData = await response.json();
 
-                // Load from localStorage with user-specific key
-                const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
-                const localStored = localStorage.getItem(userStorageKey);
-                const localVouchers = localStored ? JSON.parse(localStored) : [];
+                console.log('🔍 DEBUG GUTSCHEINE.HTML:');
+                console.log('  Current User:', currentUser);
 
-                // Filter central vouchers for current user
-                const userCentralVouchers = centralData.vouchers.filter(v =>
+                // Filter vouchers for current user
+                vouchers = centralData.vouchers.filter(v =>
                     v.userId === currentUser.userId ||
                     v.customerId === currentUser.username ||
                     v.customerId === currentUser.userId
-                );
+                ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-                // Merge: Central vouchers + local-only vouchers
-                const centralIds = new Set(userCentralVouchers.map(v => v.id));
-                const localOnlyVouchers = localVouchers.filter(v => !centralIds.has(v.id));
+                console.log(`📊 Gutscheine für ${currentUser.name} geladen: ${vouchers.length} aus vouchers.json`);
 
-                // Combined list
-                vouchers = [...userCentralVouchers, ...localOnlyVouchers];
+                // Check for pending export changes
+                const pendingExport = localStorage.getItem('pending_vouchers_export');
+                const hasPendingChanges = pendingExport && pendingExport !== '[]';
 
-                console.log(`📊 Gutscheine für ${currentUser.name} geladen: ${userCentralVouchers.length} zentral, ${localOnlyVouchers.length} nur lokal`);
-
-                // Show sync status
-                const hasPendingSync = localStorage.getItem(`babsy_vouchers_pending_sync_${currentUser.userId}`) === 'true';
-                if (localOnlyVouchers.length > 0 || hasPendingSync) {
-                    syncStatusEl.innerHTML = `<i class="fas fa-sync-alt"></i> ${localOnlyVouchers.length} lokale Änderung(en) | Sync zur zentralen DB ausstehend`;
+                if (hasPendingChanges) {
+                    syncStatusEl.innerHTML = `<i class="fas fa-sync-alt"></i> Änderungen ausstehend - Export erforderlich`;
                     syncStatusEl.style.color = '#f59e0b';
                 } else {
                     syncStatusEl.innerHTML = `<i class="fas fa-check-circle"></i> Mit zentraler Datenbank synchronisiert`;
@@ -1024,13 +1017,9 @@
                 }
 
             } catch (error) {
-                console.warn('⚠️ Zentrale Datenbank nicht erreichbar, verwende nur localStorage:', error);
-                // Fallback: nur localStorage with user-specific key
-                const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
-                const stored = localStorage.getItem(userStorageKey);
-                vouchers = stored ? JSON.parse(stored) : [];
-
-                syncStatusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Offline-Modus - Nur lokale Gutscheine`;
+                console.error('⚠️ Zentrale Datenbank nicht erreichbar:', error);
+                vouchers = [];
+                syncStatusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Fehler beim Laden der Gutscheine`;
                 syncStatusEl.style.color = '#ef4444';
             }
 

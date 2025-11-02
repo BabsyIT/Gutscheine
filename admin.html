@@ -666,45 +666,18 @@
             document.getElementById('content').style.display = 'none';
 
             try {
-                // Collect all vouchers from localStorage (all users)
-                const allVouchers = [];
-                let voucherKeys = [];
+                // Load all vouchers from central database (vouchers.json)
+                console.log('🔍 Loading vouchers from vouchers.json...');
 
-                console.log('🔍 Scanning localStorage for vouchers...');
-                console.log('Total localStorage keys:', localStorage.length);
+                const response = await fetch('data/vouchers.json?t=' + Date.now());
+                const data = await response.json();
+                const allVouchers = data.vouchers || [];
 
-                // Iterate through all localStorage keys
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    console.log(`Key ${i}:`, key);
-
-                    // Check if this is a voucher storage key
-                    if (key && key.startsWith('babsy_vouchers_')) {
-                        voucherKeys.push(key);
-                        console.log('✅ Found voucher key:', key);
-                        try {
-                            const userVouchers = JSON.parse(localStorage.getItem(key));
-                            console.log('  Vouchers in this key:', userVouchers);
-                            if (Array.isArray(userVouchers)) {
-                                allVouchers.push(...userVouchers);
-                                console.log(`  Added ${userVouchers.length} vouchers`);
-                            } else {
-                                console.warn('  Not an array:', typeof userVouchers);
-                            }
-                        } catch (e) {
-                            console.error('Failed to parse vouchers from key:', key, e);
-                        }
-                    }
-                }
-
-                console.log('📊 Summary:');
-                console.log('  Voucher keys found:', voucherKeys.length);
-                console.log('  Total vouchers:', allVouchers.length);
+                console.log('📊 Loaded:', allVouchers.length, 'vouchers from vouchers.json');
 
                 // Show message if no vouchers found
                 if (allVouchers.length === 0) {
-                    console.warn('⚠️ No vouchers found in localStorage!');
-                    console.log('💡 Tip: Generate some vouchers first on karte.html or gutscheine.html');
+                    console.warn('⚠️ No vouchers found in vouchers.json!');
                     document.getElementById('noVouchersInfo').style.display = 'block';
                 } else {
                     document.getElementById('noVouchersInfo').style.display = 'none';

@@ -566,9 +566,9 @@
 
  
 
-    // Load vouchers from BOTH localStorage AND central database (same as gutscheine.html)
+    // Load vouchers ONLY from central database (vouchers.json)
     async function loadVouchers() {
-      // Get current user from same session system as gutscheine.html
+      // Get current user from session
       let session = localStorage.getItem('babsy_voucher_session');
       let currentUser = null;
 
@@ -592,7 +592,7 @@
           return;
         }
 
-        // Authenticate user from auth files (same as gutscheine.html)
+        // Authenticate user
         currentUser = await authenticateUser(username);
 
         if (!currentUser) {
@@ -600,7 +600,7 @@
           return;
         }
 
-        // Create session (same format as gutscheine.html)
+        // Create session
         const sessionData = {
           userId: currentUser.userId,
           username: currentUser.username,
@@ -612,49 +612,23 @@
       }
 
       try {
-        // Load from central database
-        const response = await fetch('data/vouchers.json');
+        // Load ONLY from central database
+        const response = await fetch('data/vouchers.json?t=' + Date.now()); // Cache-Buster
         const centralData = await response.json();
 
-        // Load from localStorage with user-specific key
-        const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
-
-        console.log('🔍 DEBUG CODE.HTML:');
-        console.log('  Current User:', currentUser);
-        console.log('  localStorage Key:', userStorageKey);
-        console.log('  Session:', localStorage.getItem('babsy_voucher_session'));
-
-        const localStored = localStorage.getItem(userStorageKey);
-        const localVouchers = localStored ? JSON.parse(localStored) : [];
-
-        console.log('  Local Vouchers Count:', localVouchers.length);
-
-        // Filter central vouchers for current user
-        const userCentralVouchers = centralData.vouchers.filter(v =>
+        // Filter vouchers for current user
+        vouchers = centralData.vouchers.filter(v =>
           v.userId === currentUser.userId ||
           v.customerId === currentUser.username ||
           v.customerId === currentUser.userId
-        );
+        ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        console.log('  Central Vouchers Count:', userCentralVouchers.length);
-
-        // Merge: Central vouchers + local-only vouchers
-        const centralIds = new Set(userCentralVouchers.map(v => v.id));
-        const localOnlyVouchers = localVouchers.filter(v => !centralIds.has(v.id));
-
-        // Combined list
-        vouchers = [...userCentralVouchers, ...localOnlyVouchers].sort((a, b) =>
-          new Date(b.createdAt) - new Date(a.createdAt)
-        );
-
-        console.log(`📊 Gutscheine für ${currentUser.name} geladen: ${userCentralVouchers.length} zentral, ${localOnlyVouchers.length} nur lokal`);
-        console.log('  Total Vouchers:', vouchers.length);
+        console.log(`📊 ${vouchers.length} Gutscheine für ${currentUser.name} aus vouchers.json geladen`);
 
       } catch (error) {
-        console.warn('⚠️ Zentrale Datenbank nicht erreichbar, verwende nur localStorage:', error);
-        const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
-        const stored = localStorage.getItem(userStorageKey);
-        vouchers = stored ? JSON.parse(stored) : [];
+        console.error('⚠️ Fehler beim Laden von vouchers.json:', error);
+        vouchers = [];
+        showToast('Fehler beim Laden der Gutscheine', 'error');
       }
 
       renderVouchers();
@@ -712,18 +686,49 @@
       }
     }
 
-    // Save vouchers to localStorage
+    // Save vouchers - adds to pending changes for export
     async function saveVouchers() {
-      const session = localStorage.getItem('babsy_voucher_session');
-      if (!session) return false;
+      // Store all vouchers in a pending export queue
+      const allVouchers = JSON.parse(localStorage.getItem('pending_vouchers_export') || '[]');
 
-      const currentUser = JSON.parse(session);
-      if (!currentUser) return false;
+      // Merge: Remove duplicates and add new ones
+      const voucherMap = new Map();
+      allVouchers.forEach(v => voucherMap.set(v.id, v));
+      vouchers.forEach(v => voucherMap.set(v.id, v));
 
-      const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
-      localStorage.setItem(userStorageKey, JSON.stringify(vouchers));
-      console.log('💾 Gutscheine lokal gespeichert');
+      const mergedVouchers = Array.from(voucherMap.values());
+      localStorage.setItem('pending_vouchers_export', JSON.stringify(mergedVouchers));
+
+      console.log('💾 Änderungen gespeichert - Bereit für Export');
+      showToast('Änderung gespeichert - Bitte exportieren Sie die Daten!', 'warning');
+
       return true;
+    }
+
+    // Export vouchers.json for GitHub commit
+    function exportVouchersJSON() {
+      const allVouchers = JSON.parse(localStorage.getItem('pending_vouchers_export') || '[]');
+
+      const dataToExport = {
+        vouchers: allVouchers,
+        lastUpdated: new Date().toISOString(),
+        stats: {
+          total: allVouchers.length,
+          active: allVouchers.filter(v => !v.isRedeemed).length,
+          redeemed: allVouchers.filter(v => v.isRedeemed).length
+        }
+      };
+
+      const dataStr = JSON.stringify(dataToExport, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'vouchers.json';
+      link.click();
+      URL.revokeObjectURL(url);
+
+      alert('vouchers.json heruntergeladen!\n\nBitte ersetzen Sie data/vouchers.json mit dieser Datei und committen Sie die Änderung ins GitHub Repository.');
     }
 
     async function init() {
