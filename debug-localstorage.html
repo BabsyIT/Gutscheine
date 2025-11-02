@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LocalStorage Debug</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .section { margin: 20px 0; border: 1px solid #ddd; padding: 15px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>LocalStorage Debug Tool - Gutscheine</h1>
+    <button onclick="showAllData()">Alle LocalStorage Daten anzeigen</button>
+    <button onclick="clearSession()">Session löschen</button>
+    <button onclick="clearAll()">ALLES löschen (Vorsicht!)</button>
+    <div id="output"></div>
+
+    <script>
+        function showAllData() {
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+
+            // Show session
+            const session = localStorage.getItem('babsy_voucher_session');
+            const sessionDiv = document.createElement('div');
+            sessionDiv.className = 'section';
+            sessionDiv.innerHTML = '<h2>Session (babsy_voucher_session)</h2><pre>' +
+                (session ? JSON.stringify(JSON.parse(session), null, 2) : 'Keine Session') +
+                '</pre>';
+            output.appendChild(sessionDiv);
+
+            // Show all voucher keys
+            const voucherKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('babsy_vouchers_')) {
+                    voucherKeys.push(key);
+                }
+            }
+
+            voucherKeys.forEach(key => {
+                const data = localStorage.getItem(key);
+                const vouchers = JSON.parse(data);
+                const voucherDiv = document.createElement('div');
+                voucherDiv.className = 'section';
+                voucherDiv.innerHTML = `<h2>Vouchers: ${key}</h2>` +
+                    `<p><strong>Anzahl:</strong> ${vouchers.length}</p>` +
+                    `<pre>${JSON.stringify(vouchers, null, 2)}</pre>`;
+                output.appendChild(voucherDiv);
+            });
+
+            if (voucherKeys.length === 0) {
+                const noDataDiv = document.createElement('div');
+                noDataDiv.className = 'section';
+                noDataDiv.innerHTML = '<h2>Keine Gutscheine gefunden</h2>';
+                output.appendChild(noDataDiv);
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem('babsy_voucher_session');
+            alert('Session gelöscht! Seite wird neu geladen...');
+            location.reload();
+        }
+
+        function clearAll() {
+            if (confirm('Wirklich ALLES löschen? Dies kann nicht rückgängig gemacht werden!')) {
+                localStorage.clear();
+                alert('Alle Daten gelöscht! Seite wird neu geladen...');
+                location.reload();
+            }
+        }
+
+        // Auto-load on page load
+        showAllData();
+    </script>
+</body>
+</html>
