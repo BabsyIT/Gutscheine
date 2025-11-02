@@ -89,14 +89,14 @@
 
         /* Sicherstellen, dass der Filter-Button jederzeit klickbar ist */
         #filter-btn {
-            z-index: 1101;
+            z-index: 500;
         }
 
         .view-toggle {
             position: absolute;
             top: 20px;
-            left: 60px;
-            z-index: 1000;
+            left: 20px;
+            z-index: 500;
             display: flex;
             background: white;
             border-radius: 25px;
@@ -127,6 +127,15 @@
         #map {
             height: 100%;
             width: 100%;
+        }
+
+        /* Leaflet zoom controls - ensure below mobile nav */
+        .leaflet-control-zoom {
+            z-index: 500 !important;
+        }
+
+        .leaflet-top, .leaflet-bottom {
+            z-index: 500 !important;
         }
 
         /* List View Styles */

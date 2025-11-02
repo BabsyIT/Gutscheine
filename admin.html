@@ -652,21 +652,43 @@
             document.getElementById('content').style.display = 'none';
 
             try {
-                const response = await fetch('data/vouchers.json');
-                const data = await response.json();
+                // Collect all vouchers from localStorage (all users)
+                const allVouchers = [];
+
+                // Iterate through all localStorage keys
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+
+                    // Check if this is a voucher storage key
+                    if (key && key.startsWith('babsy_vouchers_')) {
+                        try {
+                            const userVouchers = JSON.parse(localStorage.getItem(key));
+                            if (Array.isArray(userVouchers)) {
+                                allVouchers.push(...userVouchers);
+                            }
+                        } catch (e) {
+                            console.warn('Failed to parse vouchers from key:', key, e);
+                        }
+                    }
+                }
+
+                // Calculate stats
+                const totalCount = allVouchers.length;
+                const redeemedCount = allVouchers.filter(v => v.isRedeemed).length;
+                const activeCount = totalCount - redeemedCount;
 
                 // Update stats
-                document.getElementById('totalCount').textContent = data.stats.total;
-                document.getElementById('activeCount').textContent = data.stats.active;
-                document.getElementById('redeemedCount').textContent = data.stats.redeemed;
+                document.getElementById('totalCount').textContent = totalCount;
+                document.getElementById('activeCount').textContent = activeCount;
+                document.getElementById('redeemedCount').textContent = redeemedCount;
 
                 // Calculate partner count
-                const partners = [...new Set(data.vouchers.map(v => v.partner))];
+                const partners = [...new Set(allVouchers.map(v => v.partner))];
                 document.getElementById('partnerCount').textContent = partners.length;
 
                 // Partner statistics
                 const partnerStats = {};
-                data.vouchers.forEach(v => {
+                allVouchers.forEach(v => {
                     if (!partnerStats[v.partner]) {
                         partnerStats[v.partner] = { total: 0, redeemed: 0 };
                     }
@@ -686,13 +708,13 @@
                 document.getElementById('partnerStats').innerHTML = partnerStatsHtml || '<p style="color: #999;">Noch keine Gutscheine vorhanden</p>';
 
                 // Vouchers table
-                const vouchersHtml = data.vouchers
+                const vouchersHtml = allVouchers
                     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                     .map(v => `
                         <tr>
                             <td><span class="code">${v.code}</span></td>
-                            <td>${v.partner}</td>
-                            <td>${v.customerId}</td>
+                            <td>${v.partner || 'Unbekannt'}</td>
+                            <td>${v.userName || v.customerId || 'Unbekannt'}</td>
                             <td>${new Date(v.createdAt).toLocaleDateString('de-DE')}</td>
                             <td>
                                 <span class="badge ${v.isRedeemed ? 'redeemed' : 'active'}">
@@ -705,7 +727,7 @@
                 document.getElementById('vouchersTable').innerHTML = vouchersHtml || '<tr><td colspan="6" style="text-align: center; color: #999;">Keine Gutscheine vorhanden</td></tr>';
 
                 // Last updated
-                document.getElementById('lastUpdated').textContent = `Zuletzt aktualisiert: ${new Date(data.lastUpdated).toLocaleString('de-DE')}`;
+                document.getElementById('lastUpdated').textContent = `Zuletzt aktualisiert: ${new Date().toLocaleString('de-DE')}`;
 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
