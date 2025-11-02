@@ -539,12 +539,16 @@
     <script>
         // Partner Daten laden
         async function loadPartners() {
-            console.log('🔄 Lade Partner aus partners.json...');
+            console.log('🔄 Lade Partner aus data/partners.json...');
             try {
-                const response = await fetch('partners.json');
+                const response = await fetch('data/partners.json');
                 console.log('✅ Fetch erfolgreich, Status:', response.status);
                 const partners = await response.json();
                 console.log('✅ JSON geparst, Anzahl Partner:', partners.length);
+
+                // Store partners globally for use in generateVoucher
+                window.partnersData = partners;
+
                 displayPartners(partners);
             } catch (error) {
                 console.error('❌ Fehler beim Laden der Partner:', error);
