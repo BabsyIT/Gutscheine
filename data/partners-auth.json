@@ -16,6 +16,132 @@
     },
     {
       "id": "partner3",
+      "username": "proinsura",
+      "password": "partner123",
+      "partnerName": "proinsura",
+      "contactEmail": "info@proinsura.ch"
+    },
+    {
+      "id": "partner4",
+      "username": "partyon",
+      "password": "partner123",
+      "partnerName": "PartyOn",
+      "contactEmail": "info@partyon.ch"
+    },
+    {
+      "id": "partner5",
+      "username": "zangger",
+      "password": "partner123",
+      "partnerName": "Zangger Websolutions",
+      "contactEmail": "info@ihrewebagentur.ch"
+    },
+    {
+      "id": "partner6",
+      "username": "utagruetter",
+      "password": "partner123",
+      "partnerName": "Uta Grütter Photography",
+      "contactEmail": "info@uta-gruetter-photographie.ch"
+    },
+    {
+      "id": "partner7",
+      "username": "seniorsatwork",
+      "password": "partner123",
+      "partnerName": "seniors@work",
+      "contactEmail": "info@seniorsatwork.ch"
+    },
+    {
+      "id": "partner8",
+      "username": "medicalservices",
+      "password": "partner123",
+      "partnerName": "Medical Services Weimann",
+      "contactEmail": "info@ms-w.ch"
+    },
+    {
+      "id": "partner9",
+      "username": "evascouture",
+      "password": "partner123",
+      "partnerName": "Evas Couture",
+      "contactEmail": "info@eva-couture.ch"
+    },
+    {
+      "id": "partner10",
+      "username": "zouts",
+      "password": "partner123",
+      "partnerName": "ZOUTS!",
+      "contactEmail": "info@zouts.ch"
+    },
+    {
+      "id": "partner11",
+      "username": "quitt",
+      "password": "partner123",
+      "partnerName": "quitt",
+      "contactEmail": "info@quitt.ch"
+    },
+    {
+      "id": "partner12",
+      "username": "babycomeback",
+      "password": "partner123",
+      "partnerName": "Babycomeback",
+      "contactEmail": "info@babycomeback.ch"
+    },
+    {
+      "id": "partner13",
+      "username": "ubshelpetica",
+      "password": "partner123",
+      "partnerName": "UBS helpetica",
+      "contactEmail": "info@ubs-helpetica.ch"
+    },
+    {
+      "id": "partner14",
+      "username": "fidares",
+      "password": "partner123",
+      "partnerName": "Fidares",
+      "contactEmail": "info@fidares.com"
+    },
+    {
+      "id": "partner15",
+      "username": "spielwarenzauber",
+      "password": "partner123",
+      "partnerName": "spielwaren zauber.ch",
+      "contactEmail": "info@spielwarenzauber.ch"
+    },
+    {
+      "id": "partner16",
+      "username": "salomea",
+      "password": "partner123",
+      "partnerName": "Salomea.ch",
+      "contactEmail": "info@salomea.ch"
+    },
+    {
+      "id": "partner17",
+      "username": "kinderyoga",
+      "password": "partner123",
+      "partnerName": "KinderYoga",
+      "contactEmail": "isabellekatharinavionnet@gmail.com"
+    },
+    {
+      "id": "partner18",
+      "username": "stickerella",
+      "password": "partner123",
+      "partnerName": "Stickerella",
+      "contactEmail": "info@stickerella.ch"
+    },
+    {
+      "id": "partner19",
+      "username": "mariajimenez",
+      "password": "partner123",
+      "partnerName": "Maria Alejandra Jimenez",
+      "contactEmail": "info@mariaalejandrajimenez.com"
+    },
+    {
+      "id": "partner20",
+      "username": "concordia",
+      "password": "partner123",
+      "partnerName": "Concordia",
+      "contactEmail": "info@concordia.ch"
+    },
+    {
+      "id": "partner99",
       "username": "demo",
       "password": "demo123",
       "partnerName": "Demo Partner",

@@ -429,9 +429,15 @@
                 const container = document.querySelector('.container');
                 const welcomeDiv = document.createElement('div');
                 welcomeDiv.className = 'partner-welcome';
+
+                let roleInfo = '';
+                if (sessionData.role && sessionData.role === 'employee') {
+                    roleInfo = ' (Mitarbeiter - Alle Partner)';
+                }
+
                 welcomeDiv.innerHTML = `
                     <i class="fas fa-user-circle"></i>
-                    Willkommen, <strong>${sessionData.partnerName}</strong>
+                    Willkommen, <strong>${sessionData.partnerName || sessionData.name}</strong>${roleInfo}
                 `;
                 container.insertBefore(welcomeDiv, container.firstChild);
 
@@ -467,23 +473,45 @@
             const errorEl = document.getElementById('loginError');
 
             try {
-                const response = await fetch('data/partners-auth.json');
-                const data = await response.json();
+                let user = null;
+                let session = null;
 
-                const partner = data.partners.find(p =>
+                // Try partner login first
+                const partnerResponse = await fetch('data/partners-auth.json');
+                const partnerData = await partnerResponse.json();
+                const partner = partnerData.partners.find(p =>
                     p.username === username && p.password === password
                 );
 
                 if (partner) {
-                    // Create session
-                    const session = {
+                    session = {
                         partnerId: partner.id,
                         username: partner.username,
                         partnerName: partner.partnerName,
                         contactEmail: partner.contactEmail,
+                        role: 'partner',
                         loginTime: new Date().toISOString()
                     };
+                } else {
+                    // Try employee login
+                    const employeeResponse = await fetch('data/users.json');
+                    const employeeData = await employeeResponse.json();
+                    const employee = employeeData.users.find(u =>
+                        u.username === username && u.password === password
+                    );
 
+                    if (employee) {
+                        session = {
+                            userId: employee.id,
+                            username: employee.username,
+                            name: employee.name,
+                            role: 'employee',
+                            loginTime: new Date().toISOString()
+                        };
+                    }
+                }
+
+                if (session) {
                     localStorage.setItem('babsy_partner_session', JSON.stringify(session));
 
                     // Clear form
@@ -504,10 +532,43 @@
 
         // Load partners from data/partners.json
         async function loadPartners() {
+            // Get current session
+            const session = localStorage.getItem('babsy_partner_session');
+            if (!session) {
+                console.error('No session found');
+                return;
+            }
+            const currentUser = JSON.parse(session);
+
             try {
                 const response = await fetch('data/partners.json');
-                const partners = await response.json();
-                generateQRCodes(partners);
+                const allPartners = await response.json();
+
+                let partnersToShow = [];
+
+                // If employee: show ALL partners
+                if (currentUser.role === 'employee') {
+                    partnersToShow = allPartners;
+                } else {
+                    // If partner: only show own QR code
+                    partnersToShow = allPartners.filter(p =>
+                        p.partnername === currentUser.partnerName ||
+                        p.partnername.toLowerCase() === currentUser.partnerName.toLowerCase()
+                    );
+
+                    if (partnersToShow.length === 0) {
+                        document.getElementById('qrGrid').innerHTML = `
+                            <div style="grid-column: 1/-1; text-align: center; color: #999; padding: 40px;">
+                                <i class="fas fa-info-circle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                                <p>Kein Partner-Profil gefunden für: ${currentUser.partnerName}</p>
+                                <p style="font-size: 14px; margin-top: 10px;">Bitte kontaktieren Sie den Administrator.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                }
+
+                generateQRCodes(partnersToShow);
             } catch (error) {
                 console.error('Error loading partners:', error);
                 document.getElementById('qrGrid').innerHTML = `
