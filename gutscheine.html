@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --primary-color: #a71a80;
@@ -764,8 +765,8 @@
                 <i class="fas fa-times-circle"></i> Eingelöst
             </button>
             <div style="flex-grow: 1;"></div>
-            <button class="filter-btn" onclick="exportLocalVouchers()" style="background: var(--secondary-color); color: white; border-color: var(--secondary-color);" title="Exportiert lokale Gutscheine zum manuellen Sync">
-                <i class="fas fa-download"></i> Export
+            <button class="filter-btn" onclick="exportLocalVouchers()" style="background: var(--secondary-color); color: white; border-color: var(--secondary-color);" title="Exportiert Gutscheine als PDF">
+                <i class="fas fa-file-pdf"></i> Export PDF
             </button>
             <button class="filter-btn" onclick="addDemoData()" style="background: var(--primary-color); color: white; border-color: var(--primary-color);">
                 <i class="fas fa-plus"></i> Demo-Daten laden
@@ -1311,48 +1312,103 @@
             return true;
         }
 
-        // Export vouchers from pending queue for manual sync
+        // Export vouchers as PDF
         function exportLocalVouchers() {
-            const pendingExportStr = localStorage.getItem('pending_vouchers_export') || '[]';
-            const allPendingVouchers = JSON.parse(pendingExportStr);
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
 
-            if (allPendingVouchers.length === 0) {
-                alert('Keine ausstehenden Änderungen zum Exportieren.');
-                return;
+            // Get current user
+            const session = localStorage.getItem('babsy_voucher_session');
+            const currentUser = session ? JSON.parse(session) : { name: 'Unbekannt' };
+
+            // Title
+            doc.setFontSize(20);
+            doc.setTextColor(0, 159, 173); // Babsy color
+            doc.text('Babsy Partnergutscheine', 105, 20, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Benutzer: ${currentUser.name}`, 105, 30, { align: 'center' });
+            doc.text(`Exportiert am: ${new Date().toLocaleDateString('de-DE')}`, 105, 37, { align: 'center' });
+
+            // Statistics
+            const total = vouchers.length;
+            const active = vouchers.filter(v => !v.isRedeemed).length;
+            const redeemed = vouchers.filter(v => v.isRedeemed).length;
+
+            doc.setFontSize(10);
+            doc.text(`Gesamt: ${total} | Aktiv: ${active} | Eingelöst: ${redeemed}`, 105, 44, { align: 'center' });
+
+            // Line separator
+            doc.setDrawColor(200, 200, 200);
+            doc.line(20, 48, 190, 48);
+
+            let yPos = 58;
+
+            if (vouchers.length === 0) {
+                doc.setFontSize(12);
+                doc.text('Keine Gutscheine vorhanden', 105, yPos, { align: 'center' });
+            } else {
+                vouchers.forEach((voucher, index) => {
+                    // Check if we need a new page
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+
+                    // Voucher box
+                    doc.setDrawColor(0, 159, 173);
+                    doc.setLineWidth(0.5);
+                    doc.rect(20, yPos - 5, 170, 35);
+
+                    // Status badge
+                    if (voucher.isRedeemed) {
+                        doc.setFillColor(239, 68, 68); // Red
+                        doc.setTextColor(255, 255, 255);
+                    } else {
+                        doc.setFillColor(16, 185, 129); // Green
+                        doc.setTextColor(255, 255, 255);
+                    }
+                    doc.roundedRect(160, yPos - 3, 25, 6, 2, 2, 'F');
+                    doc.setFontSize(8);
+                    doc.text(voucher.isRedeemed ? 'Eingelöst' : 'Aktiv', 172.5, yPos + 1, { align: 'center' });
+
+                    // Voucher details
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`${voucher.partner}`, 25, yPos + 2);
+
+                    doc.setFont(undefined, 'normal');
+                    doc.setFontSize(9);
+                    doc.text(`Code: ${voucher.code}`, 25, yPos + 8);
+                    doc.text(`${voucher.title || voucher.value}`, 25, yPos + 14);
+
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`Erstellt: ${new Date(voucher.createdAt).toLocaleDateString('de-DE')}`, 25, yPos + 20);
+
+                    if (voucher.isRedeemed && voucher.redeemedAt) {
+                        doc.text(`Eingelöst: ${new Date(voucher.redeemedAt).toLocaleDateString('de-DE')}`, 25, yPos + 25);
+                    }
+
+                    yPos += 42;
+                });
             }
 
-            const dataToExport = {
-                vouchers: allPendingVouchers,
-                lastUpdated: new Date().toISOString(),
-                stats: {
-                    total: allPendingVouchers.length,
-                    active: allPendingVouchers.filter(v => !v.isRedeemed).length,
-                    redeemed: allPendingVouchers.filter(v => v.isRedeemed).length
-                }
-            };
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text(`Seite ${i} von ${pageCount}`, 105, 290, { align: 'center' });
+            }
 
-            const dataStr = JSON.stringify(dataToExport, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'vouchers.json';
-            link.click();
-            URL.revokeObjectURL(url);
+            // Save PDF
+            doc.save(`Babsy_Gutscheine_${currentUser.name}_${new Date().toISOString().split('T')[0]}.pdf`);
 
-            // Clear pending export queue after successful export
-            localStorage.removeItem('pending_vouchers_export');
-
-            console.log('📥 Gutscheine exportiert - kann manuell in data/vouchers.json hochgeladen werden');
-            alert('Gutscheine wurden als vouchers.json exportiert.\n\n' +
-                  'Nächste Schritte:\n' +
-                  '1. Laden Sie die heruntergeladene Datei\n' +
-                  '2. Ersetzen Sie damit data/vouchers.json\n' +
-                  '3. Commiten und pushen Sie die Änderung zu GitHub\n\n' +
-                  'Nach dem Push werden alle Seiten die aktualisierten Daten zeigen.');
-
-            // Reload to show updated sync status
-            loadVouchers();
+            console.log('📥 Gutscheine als PDF exportiert');
         }
 
         // Redeem voucher (manual - for demo/testing)

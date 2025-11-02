@@ -10,11 +10,13 @@
 
   <title>Partnergutschein Manager</title> 
 
-  <script src="/_sdk/data_sdk.js"></script> 
+  <script src="/_sdk/data_sdk.js"></script>
 
-  <script src="/_sdk/element_sdk.js"></script> 
+  <script src="/_sdk/element_sdk.js"></script>
 
-3 Code einloesen  <script src="https://cdn.tailwindcss.com"></script> 
+3 Code einloesen  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
 
   <style> 
 
@@ -179,8 +181,8 @@
      <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-bold">Meine Gutscheine</h2>
       <button onclick="exportVouchersJSON()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-       Export JSON
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+       Export PDF
       </button>
      </div>
 
@@ -711,30 +713,101 @@
       return true;
     }
 
-    // Export vouchers.json for GitHub commit
+    // Export vouchers as PDF
     function exportVouchersJSON() {
-      const allVouchers = JSON.parse(localStorage.getItem('pending_vouchers_export') || '[]');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
 
-      const dataToExport = {
-        vouchers: allVouchers,
-        lastUpdated: new Date().toISOString(),
-        stats: {
-          total: allVouchers.length,
-          active: allVouchers.filter(v => !v.isRedeemed).length,
-          redeemed: allVouchers.filter(v => v.isRedeemed).length
-        }
-      };
+      // Get session info
+      const session = localStorage.getItem('babsy_voucher_session');
+      const currentUser = session ? JSON.parse(session) : { name: 'Unbekannt' };
 
-      const dataStr = JSON.stringify(dataToExport, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'vouchers.json';
-      link.click();
-      URL.revokeObjectURL(url);
+      // Title
+      doc.setFontSize(20);
+      doc.setTextColor(0, 159, 173); // Babsy color
+      doc.text('Babsy Partnergutscheine', 105, 20, { align: 'center' });
 
-      alert('vouchers.json heruntergeladen!\n\nBitte ersetzen Sie data/vouchers.json mit dieser Datei und committen Sie die Änderung ins GitHub Repository.');
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Benutzer: ${currentUser.name}`, 105, 30, { align: 'center' });
+      doc.text(`Exportiert am: ${new Date().toLocaleDateString('de-DE')}`, 105, 37, { align: 'center' });
+
+      // Statistics
+      const total = vouchers.length;
+      const active = vouchers.filter(v => !v.isRedeemed).length;
+      const redeemed = vouchers.filter(v => v.isRedeemed).length;
+
+      doc.setFontSize(10);
+      doc.text(`Gesamt: ${total} | Aktiv: ${active} | Eingelöst: ${redeemed}`, 105, 44, { align: 'center' });
+
+      // Line separator
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, 48, 190, 48);
+
+      let yPos = 58;
+
+      if (vouchers.length === 0) {
+        doc.setFontSize(12);
+        doc.text('Keine Gutscheine vorhanden', 105, yPos, { align: 'center' });
+      } else {
+        vouchers.forEach((voucher, index) => {
+          // Check if we need a new page
+          if (yPos > 270) {
+            doc.addPage();
+            yPos = 20;
+          }
+
+          // Voucher box
+          doc.setDrawColor(0, 159, 173);
+          doc.setLineWidth(0.5);
+          doc.rect(20, yPos - 5, 170, 35);
+
+          // Status badge
+          if (voucher.isRedeemed) {
+            doc.setFillColor(239, 68, 68); // Red
+            doc.setTextColor(255, 255, 255);
+          } else {
+            doc.setFillColor(16, 185, 129); // Green
+            doc.setTextColor(255, 255, 255);
+          }
+          doc.roundedRect(160, yPos - 3, 25, 6, 2, 2, 'F');
+          doc.setFontSize(8);
+          doc.text(voucher.isRedeemed ? 'Eingelöst' : 'Aktiv', 172.5, yPos + 1, { align: 'center' });
+
+          // Voucher details
+          doc.setTextColor(0, 0, 0);
+          doc.setFontSize(11);
+          doc.setFont(undefined, 'bold');
+          doc.text(`${voucher.partner}`, 25, yPos + 2);
+
+          doc.setFont(undefined, 'normal');
+          doc.setFontSize(9);
+          doc.text(`Code: ${voucher.code}`, 25, yPos + 8);
+          doc.text(`${voucher.title || voucher.value}`, 25, yPos + 14);
+
+          doc.setFontSize(8);
+          doc.setTextColor(100, 100, 100);
+          doc.text(`Erstellt: ${new Date(voucher.createdAt).toLocaleDateString('de-DE')}`, 25, yPos + 20);
+
+          if (voucher.isRedeemed && voucher.redeemedAt) {
+            doc.text(`Eingelöst: ${new Date(voucher.redeemedAt).toLocaleDateString('de-DE')}`, 25, yPos + 25);
+          }
+
+          yPos += 42;
+        });
+      }
+
+      // Footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Seite ${i} von ${pageCount}`, 105, 290, { align: 'center' });
+      }
+
+      // Save PDF
+      doc.save(`Babsy_Gutscheine_${currentUser.name}_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
     async function init() {
