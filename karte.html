@@ -28,10 +28,10 @@
 
         .search-filter-bar {
             position: absolute;
-            top: 20px;
+            top: 20px; /* Relativ zum map-container (der schon 80px vom Top entfernt ist) */
             left: 50%;
             transform: translateX(-50%);
-            z-index: 500; /* Niedriger als mobile Navigation (9999) */
+            z-index: 900;
             display: flex;
             gap: 10px;
             align-items: center;
@@ -87,16 +87,16 @@
             color: white;
         }
 
-        /* Sicherstellen, dass der Filter-Button jederzeit klickbar ist */
+        /* Filter-Button ist bereits im search-filter-bar Container mit z-index 1100 */
         #filter-btn {
-            z-index: 500;
+            z-index: inherit;
         }
 
         .view-toggle {
             position: absolute;
-            top: 20px;
+            top: 20px; /* Relativ zum map-container, gleiche Höhe wie Suchfeld */
             left: 20px;
-            z-index: 500;
+            z-index: 900;
             display: flex;
             background: white;
             border-radius: 25px;
@@ -578,8 +578,12 @@
                 width: calc(100% - 60px);
             }
 
+            .search-filter-bar {
+                top: 20px; /* Relativ zum Container */
+            }
+
             .view-toggle {
-                top: 85px;
+                top: 90px; /* Unter dem Suchfeld auf Mobile */
                 left: 10px;
             }
 

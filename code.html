@@ -566,35 +566,158 @@
 
  
 
-    const dataHandler = { 
+    // Load vouchers from BOTH localStorage AND central database (same as gutscheine.html)
+    async function loadVouchers() {
+      // Get current user from same session system as gutscheine.html
+      let session = localStorage.getItem('babsy_voucher_session');
+      let currentUser = null;
 
-      onDataChanged(data) { 
+      if (session) {
+        try {
+          const sessionData = JSON.parse(session);
+          currentUser = {
+            userId: sessionData.userId,
+            username: sessionData.username,
+            name: sessionData.name
+          };
+        } catch (e) {
+          console.error('Session parse error:', e);
+        }
+      }
 
-        vouchers = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); 
+      if (!currentUser) {
+        const username = prompt('Bitte geben Sie Ihren Benutzernamen ein:\n\nBeispiele: mitglied1, mitglied2, demo, admin');
+        if (!username) {
+          showToast('Bitte melden Sie sich an', 'error');
+          return;
+        }
 
-        renderVouchers(); 
+        // Authenticate user from auth files (same as gutscheine.html)
+        currentUser = await authenticateUser(username);
 
-      } 
+        if (!currentUser) {
+          showToast('Benutzername nicht gefunden', 'error');
+          return;
+        }
 
-    }; 
+        // Create session (same format as gutscheine.html)
+        const sessionData = {
+          userId: currentUser.userId,
+          username: currentUser.username,
+          name: currentUser.name,
+          userType: currentUser.userType || 'member',
+          loginTime: new Date().toISOString()
+        };
+        localStorage.setItem('babsy_voucher_session', JSON.stringify(sessionData));
+      }
 
- 
+      try {
+        // Load from central database
+        const response = await fetch('data/vouchers.json');
+        const centralData = await response.json();
 
-    async function init() { 
+        // Load from localStorage with user-specific key
+        const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
+        const localStored = localStorage.getItem(userStorageKey);
+        const localVouchers = localStored ? JSON.parse(localStored) : [];
 
-      if (window.dataSdk) { 
+        // Filter central vouchers for current user
+        const userCentralVouchers = centralData.vouchers.filter(v =>
+          v.userId === currentUser.userId ||
+          v.customerId === currentUser.username ||
+          v.customerId === currentUser.userId
+        );
 
-        const initResult = await window.dataSdk.init(dataHandler); 
+        // Merge: Central vouchers + local-only vouchers
+        const centralIds = new Set(userCentralVouchers.map(v => v.id));
+        const localOnlyVouchers = localVouchers.filter(v => !centralIds.has(v.id));
 
-        if (!initResult.isOk) { 
+        // Combined list
+        vouchers = [...userCentralVouchers, ...localOnlyVouchers].sort((a, b) =>
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
 
-          showToast('Fehler beim Laden der Daten', 'error'); 
+        console.log(`📊 Gutscheine für ${currentUser.name} geladen: ${userCentralVouchers.length} zentral, ${localOnlyVouchers.length} nur lokal`);
 
-        } 
+      } catch (error) {
+        console.warn('⚠️ Zentrale Datenbank nicht erreichbar, verwende nur localStorage:', error);
+        const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
+        const stored = localStorage.getItem(userStorageKey);
+        vouchers = stored ? JSON.parse(stored) : [];
+      }
 
-      } 
+      renderVouchers();
+    }
 
- 
+    // Authenticate user (same as gutscheine.html)
+    async function authenticateUser(username) {
+      try {
+        // Try Mitglieder
+        const memberResponse = await fetch('data/mitglieder-auth.json');
+        const memberData = await memberResponse.json();
+        const member = memberData.members.find(m => m.username === username);
+
+        if (member) {
+          return {
+            userId: member.id,
+            username: member.username,
+            name: member.name,
+            userType: 'member'
+          };
+        }
+
+        // Try Partner
+        const partnerResponse = await fetch('data/partners-auth.json');
+        const partnerData = await partnerResponse.json();
+        const partner = partnerData.partners.find(p => p.username === username);
+
+        if (partner) {
+          return {
+            userId: partner.id,
+            username: partner.username,
+            name: partner.partnerName,
+            userType: 'partner'
+          };
+        }
+
+        // Try Employee/Admin
+        const employeeResponse = await fetch('data/users.json');
+        const employeeData = await employeeResponse.json();
+        const employee = employeeData.users.find(u => u.username === username);
+
+        if (employee) {
+          return {
+            userId: employee.id,
+            username: employee.username,
+            name: employee.name,
+            userType: 'employee'
+          };
+        }
+
+        return null;
+      } catch (error) {
+        console.error('Authentication error:', error);
+        return null;
+      }
+    }
+
+    // Save vouchers to localStorage
+    async function saveVouchers() {
+      const session = localStorage.getItem('babsy_voucher_session');
+      if (!session) return false;
+
+      const currentUser = JSON.parse(session);
+      if (!currentUser) return false;
+
+      const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
+      localStorage.setItem(userStorageKey, JSON.stringify(vouchers));
+      console.log('💾 Gutscheine lokal gespeichert');
+      return true;
+    }
+
+    async function init() {
+      // Load vouchers
+      await loadVouchers();
 
       if (window.elementSdk) { 
 
@@ -952,51 +1075,62 @@
 
          
 
-        const newVoucher = { 
+        const session = localStorage.getItem('babsy_voucher_session');
+        const currentUser = session ? JSON.parse(session) : null;
 
-          id: Date.now().toString(), 
+        const newVoucher = {
 
-          code: generateVoucherCode(), 
+          id: Date.now().toString(),
 
-          title: title, 
+          code: generateVoucherCode(),
 
-          description: description, 
+          title: title,
 
-          partner: partner, 
+          description: description,
 
-          value: title, 
+          partner: partner,
 
-          createdAt: new Date().toISOString(), 
+          value: title,
 
-          redeemedAt: '', 
+          userId: currentUser?.userId || 'unknown',
 
-          isRedeemed: false 
+          customerId: currentUser?.username || 'unknown',
 
-        }; 
+          createdAt: new Date().toISOString(),
 
- 
+          redeemedAt: '',
 
-        const result = await window.dataSdk.create(newVoucher); 
+          isRedeemed: false
 
-         
+        };
 
-        submitBtn.disabled = false; 
 
-        submitBtn.textContent = 'Erstellen'; 
 
- 
+        vouchers.unshift(newVoucher);
 
-        if (result.isOk) { 
+        const saved = await saveVouchers();
 
-          showToast('Gutschein erfolgreich erstellt!'); 
 
-          document.getElementById('create-modal').classList.add('hidden'); 
 
-          document.getElementById('create-form').reset(); 
+        submitBtn.disabled = false;
 
-        } else { 
+        submitBtn.textContent = 'Erstellen';
 
-          showToast('Fehler beim Erstellen des Gutscheins', 'error'); 
+
+
+        if (saved) {
+
+          renderVouchers();
+
+          showToast('Gutschein erfolgreich erstellt!');
+
+          document.getElementById('create-modal').classList.add('hidden');
+
+          document.getElementById('create-form').reset();
+
+        } else {
+
+          showToast('Fehler beim Erstellen des Gutscheins', 'error');
 
         } 
 
@@ -1038,39 +1172,35 @@
 
  
 
-        const updatedVoucher = { 
+        voucher.isRedeemed = true;
 
-          ...voucher, 
+        voucher.redeemedAt = new Date().toISOString();
 
-          isRedeemed: true, 
 
-          redeemedAt: new Date().toISOString() 
 
-        }; 
+        const saved = await saveVouchers();
 
- 
 
-        const result = await window.dataSdk.update(updatedVoucher); 
 
-         
+        submitBtn.disabled = false;
 
-        submitBtn.disabled = false; 
+        submitBtn.textContent = 'Einlösen';
 
-        submitBtn.textContent = 'Einlösen'; 
 
- 
 
-        if (result.isOk) { 
+        if (saved) {
 
-          showToast('Gutschein erfolgreich eingelöst!'); 
+          renderVouchers();
 
-          document.getElementById('redeem-modal').classList.add('hidden'); 
+          showToast('Gutschein erfolgreich eingelöst!');
 
-          document.getElementById('redeem-form').reset(); 
+          document.getElementById('redeem-modal').classList.add('hidden');
 
-        } else { 
+          document.getElementById('redeem-form').reset();
 
-          showToast('Fehler beim Einlösen des Gutscheins', 'error'); 
+        } else {
+
+          showToast('Fehler beim Einlösen des Gutscheins', 'error');
 
         } 
 
