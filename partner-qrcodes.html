@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partner QR-Codes - Babsy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- QRCode.js library from unpkg (more reliable) -->
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         :root {
             --primary-color: #a71a80;
@@ -690,9 +691,38 @@
             }, 100); // Single delay for all QR codes
         }
 
+        // Wait for QRCode library to load
+        function waitForQRCode() {
+            return new Promise((resolve) => {
+                if (typeof QRCode !== 'undefined') {
+                    console.log('✅ QRCode library already loaded');
+                    resolve();
+                } else {
+                    console.log('⏳ Waiting for QRCode library to load...');
+                    const checkInterval = setInterval(() => {
+                        if (typeof QRCode !== 'undefined') {
+                            console.log('✅ QRCode library loaded');
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 100);
+
+                    // Timeout after 5 seconds
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        if (typeof QRCode === 'undefined') {
+                            console.error('❌ QRCode library failed to load after 5 seconds');
+                            resolve(); // Resolve anyway to show error message
+                        }
+                    }, 5000);
+                }
+            });
+        }
+
         // Load partners on page load
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             if (checkAuth()) {
+                await waitForQRCode();
                 loadPartners();
             }
         });
