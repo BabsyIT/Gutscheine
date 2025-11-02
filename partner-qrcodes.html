@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partner QR-Codes - Babsy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QRCode.js library from unpkg (more reliable) -->
-    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- QRCode.js library - primary CDN and local fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script>
+        // Fallback to local copy if CDN fails
+        if (typeof QRCode === 'undefined') {
+            console.log('⚠️ CDN failed, loading local QRCode library...');
+            document.write('<script src="js/qrcode.min.js"><\/script>');
+        }
+    </script>
     <style>
         :root {
             --primary-color: #a71a80;
