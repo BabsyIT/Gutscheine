@@ -861,6 +861,9 @@
                                 <i class="fas fa-external-link-alt"></i> Website
                             </a>
                         ` : ''}
+                        <button class="list-card-btn list-card-btn-primary" onclick="generateVoucher('${partner.partnername.replace(/'/g, "\\'")}', '${(partner.beschreibung_de || '').replace(/'/g, "\\'")}')">
+                            <i class="fas fa-gift"></i> Gutschein
+                        </button>
                     </div>
                 </div>
             `;
@@ -914,6 +917,14 @@
 
         // Generate voucher for partner
         function generateVoucher(partnerName, description) {
+            // Prompt for user ID/email
+            const userId = prompt('Bitte geben Sie Ihre Mitglieds-ID oder E-Mail-Adresse ein:');
+
+            if (!userId || userId.trim() === '') {
+                alert('Gutschein-Generierung abgebrochen. Bitte geben Sie eine gültige Benutzer-ID ein.');
+                return;
+            }
+
             const voucherCode = generateVoucherCode();
             const voucher = {
                 id: Date.now().toString(),
@@ -922,20 +933,23 @@
                 description: description,
                 partner: partnerName,
                 value: description,
+                userId: userId.trim(),
+                customerId: userId.trim(),
                 createdAt: new Date().toISOString(),
                 redeemedAt: '',
                 isRedeemed: false
             };
 
             // Show success message
-            alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.`);
+            alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${userId}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.`);
 
-            // Optional: Save to localStorage for persistence across pages
-            let vouchers = JSON.parse(localStorage.getItem('babsy_vouchers') || '[]');
+            // Save to user-specific localStorage
+            const userStorageKey = `babsy_vouchers_${userId.trim()}`;
+            let vouchers = JSON.parse(localStorage.getItem(userStorageKey) || '[]');
             vouchers.push(voucher);
-            localStorage.setItem('babsy_vouchers', JSON.stringify(vouchers));
+            localStorage.setItem(userStorageKey, JSON.stringify(vouchers));
 
-            console.log('Gutschein generiert:', voucher);
+            console.log('Gutschein generiert für Benutzer', userId, ':', voucher);
         }
 
         // Mobile Menu Toggle

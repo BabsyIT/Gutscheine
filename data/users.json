@@ -11,7 +11,7 @@
       "id": "emp1",
       "username": "mitarbeiter",
       "password": "babsy123",
-      "role": "employee",
+      "role": "admin",
       "name": "Mitarbeiter Demo"
     }
   ]
