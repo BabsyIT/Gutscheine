@@ -618,8 +618,16 @@
 
         // Load from localStorage with user-specific key
         const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
+
+        console.log('🔍 DEBUG CODE.HTML:');
+        console.log('  Current User:', currentUser);
+        console.log('  localStorage Key:', userStorageKey);
+        console.log('  Session:', localStorage.getItem('babsy_voucher_session'));
+
         const localStored = localStorage.getItem(userStorageKey);
         const localVouchers = localStored ? JSON.parse(localStored) : [];
+
+        console.log('  Local Vouchers Count:', localVouchers.length);
 
         // Filter central vouchers for current user
         const userCentralVouchers = centralData.vouchers.filter(v =>
@@ -627,6 +635,8 @@
           v.customerId === currentUser.username ||
           v.customerId === currentUser.userId
         );
+
+        console.log('  Central Vouchers Count:', userCentralVouchers.length);
 
         // Merge: Central vouchers + local-only vouchers
         const centralIds = new Set(userCentralVouchers.map(v => v.id));
@@ -638,6 +648,7 @@
         );
 
         console.log(`📊 Gutscheine für ${currentUser.name} geladen: ${userCentralVouchers.length} zentral, ${localOnlyVouchers.length} nur lokal`);
+        console.log('  Total Vouchers:', vouchers.length);
 
       } catch (error) {
         console.warn('⚠️ Zentrale Datenbank nicht erreichbar, verwende nur localStorage:', error);
