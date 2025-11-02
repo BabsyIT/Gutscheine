@@ -172,11 +172,17 @@
 
     <div class="flex gap-4 mb-8"><button id="create-btn" class="px-6 py-3 rounded-lg font-semibold transition-colors"> ✨ Gutschein erstellen </button> <button id="redeem-btn" class="px-6 py-3 rounded-lg font-semibold transition-colors"> 🎁 Gutschein einlösen </button> 
 
-    </div><!-- Voucher List --> 
+    </div><!-- Voucher List -->
 
-    <div> 
+    <div>
 
-     <h2 class="text-2xl font-bold mb-4">Meine Gutscheine</h2> 
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold">Meine Gutscheine</h2>
+      <button onclick="exportVouchersJSON()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+       Export JSON
+      </button>
+     </div>
 
      <div id="voucher-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><!-- Vouchers will be rendered here --> 
 

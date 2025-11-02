@@ -1273,7 +1273,7 @@
                   `Hinweis: Nutzen Sie diesen Code nur einmal.`);
         }
 
-        // Save voucher changes to both localStorage and prepare for central sync
+        // Save voucher changes to pending export queue (NO localStorage)
         async function saveVoucherChanges() {
             // Get current user session
             const session = localStorage.getItem('babsy_voucher_session');
@@ -1283,29 +1283,51 @@
             }
             const currentUser = JSON.parse(session);
 
-            // Always save to localStorage with user-specific key for offline capability
-            const userStorageKey = `babsy_vouchers_${currentUser.userId}`;
-            localStorage.setItem(userStorageKey, JSON.stringify(vouchers));
+            // Add changed vouchers to pending export queue
+            const pendingExportStr = localStorage.getItem('pending_vouchers_export') || '[]';
+            let allPendingVouchers = JSON.parse(pendingExportStr);
 
-            // Mark that there are pending changes for central sync
-            localStorage.setItem(`babsy_vouchers_pending_sync_${currentUser.userId}`, 'true');
+            // Update existing vouchers or add new ones
+            vouchers.forEach(voucher => {
+                const existingIndex = allPendingVouchers.findIndex(v => v.id === voucher.id);
+                if (existingIndex !== -1) {
+                    allPendingVouchers[existingIndex] = voucher;
+                } else {
+                    allPendingVouchers.push(voucher);
+                }
+            });
 
-            console.log('💾 Gutscheine lokal gespeichert, Sync zur zentralen DB ausstehend');
+            localStorage.setItem('pending_vouchers_export', JSON.stringify(allPendingVouchers));
 
-            // In a real implementation, this would trigger a GitHub Action or API call
-            // For demo purposes, we show that the change is tracked
+            console.log('💾 Änderungen in Export-Queue gespeichert - Export erforderlich');
+
+            // Update sync status
+            const syncStatusEl = document.getElementById('syncStatus');
+            if (syncStatusEl) {
+                syncStatusEl.innerHTML = `<i class="fas fa-sync-alt"></i> Änderungen ausstehend - Export erforderlich`;
+                syncStatusEl.style.color = '#f59e0b';
+            }
+
             return true;
         }
 
-        // Export local vouchers for manual sync (Demo Helper)
+        // Export vouchers from pending queue for manual sync
         function exportLocalVouchers() {
+            const pendingExportStr = localStorage.getItem('pending_vouchers_export') || '[]';
+            const allPendingVouchers = JSON.parse(pendingExportStr);
+
+            if (allPendingVouchers.length === 0) {
+                alert('Keine ausstehenden Änderungen zum Exportieren.');
+                return;
+            }
+
             const dataToExport = {
-                vouchers: vouchers,
+                vouchers: allPendingVouchers,
                 lastUpdated: new Date().toISOString(),
                 stats: {
-                    total: vouchers.length,
-                    active: vouchers.filter(v => !v.isRedeemed).length,
-                    redeemed: vouchers.filter(v => v.isRedeemed).length
+                    total: allPendingVouchers.length,
+                    active: allPendingVouchers.filter(v => !v.isRedeemed).length,
+                    redeemed: allPendingVouchers.filter(v => v.isRedeemed).length
                 }
             };
 
@@ -1318,8 +1340,19 @@
             link.click();
             URL.revokeObjectURL(url);
 
-            console.log('📥 Lokale Gutscheine exportiert - kann manuell in data/vouchers.json hochgeladen werden');
-            alert('Lokale Gutscheine wurden als vouchers.json exportiert.\n\nFür die Demo:\n1. Laden Sie die Datei herunter\n2. Ersetzen Sie damit data/vouchers.json\n3. Commiten und pushen Sie die Änderung\n\nDies simuliert die zentrale Synchronisation.');
+            // Clear pending export queue after successful export
+            localStorage.removeItem('pending_vouchers_export');
+
+            console.log('📥 Gutscheine exportiert - kann manuell in data/vouchers.json hochgeladen werden');
+            alert('Gutscheine wurden als vouchers.json exportiert.\n\n' +
+                  'Nächste Schritte:\n' +
+                  '1. Laden Sie die heruntergeladene Datei\n' +
+                  '2. Ersetzen Sie damit data/vouchers.json\n' +
+                  '3. Commiten und pushen Sie die Änderung zu GitHub\n\n' +
+                  'Nach dem Push werden alle Seiten die aktualisierten Daten zeigen.');
+
+            // Reload to show updated sync status
+            loadVouchers();
         }
 
         // Redeem voucher (manual - for demo/testing)
