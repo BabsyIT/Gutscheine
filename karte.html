@@ -583,21 +583,6 @@
                 grid-template-columns: 1fr;
                 padding: 10px;
             }
-            /* Fade overlay for list view: pointer-events disabled so es blockiert keine Buttons */
-            .list-fade-overlay {
-                position: fixed;
-                top: 100px; /* adjust based on your header + spacing */
-                left: 0;
-                width: 100vw;
-                height: 80px; /* how tall the gradient fade is */
-                pointer-events: none; /* allow clicks to pass through */
-                z-index: 900; /* below search/filter bar (z-index: 1100) */
-                background: linear-gradient(
-                to bottom,
-                rgba(245, 245, 245, 1) 0%,   /* solid color of background */
-                rgba(245, 245, 245, 0) 100%  /* fade to transparent */
-                );
-            }
         }
 
         /* Ensure overlay never blocks clicks on desktop as well */
