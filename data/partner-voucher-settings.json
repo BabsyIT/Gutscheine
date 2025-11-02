@@ -1,0 +1,26 @@
+{
+  "settings": [
+    {
+      "partnerId": "partner1",
+      "partnerName": "E-TriColor",
+      "voucherConfig": {
+        "validityDays": 365,
+        "maxPerYear": 2,
+        "description": "10% Rabatt auf alle Produkte",
+        "voucherValue": "10%",
+        "conditions": "Gültig für alle Produkte, nicht kombinierbar mit anderen Aktionen"
+      }
+    },
+    {
+      "partnerId": "partner2",
+      "partnerName": "KidisArt",
+      "voucherConfig": {
+        "validityDays": 180,
+        "maxPerYear": 3,
+        "description": "10% Rabatt auf das gesamte Sortiment",
+        "voucherValue": "10%",
+        "conditions": "Online und im Laden einlösbar"
+      }
+    }
+  ]
+}
