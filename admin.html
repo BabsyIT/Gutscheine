@@ -475,10 +475,12 @@
     </header>
 
     <div class="container">
-        <h1>
-            <i class="fas fa-chart-line"></i>
-            Admin Dashboard
-            <div style="display: flex; align-items: center; gap: 15px; margin-left: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+            <h1 style="margin: 0;">
+                <i class="fas fa-chart-line"></i>
+                Admin Dashboard
+            </h1>
+            <div style="display: flex; align-items: center; gap: 15px;">
                 <div class="user-info" id="userInfo"></div>
                 <button class="refresh-btn" onclick="loadData()">
                     <i class="fas fa-sync-alt"></i> Aktualisieren
@@ -487,7 +489,7 @@
                     <i class="fas fa-sign-out-alt"></i> Abmelden
                 </button>
             </div>
-        </h1>
+        </div>
 
         <div id="loading" class="loading">
             <div class="spinner"></div>
