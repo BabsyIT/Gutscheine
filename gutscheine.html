@@ -1080,6 +1080,13 @@
                         <div class="voucher-code">${voucher.code}</div>
                     </div>
                     <div class="voucher-body">
+                        <!-- Prominent Benefits Display -->
+                        ${voucher.value || voucher.voucherValue ? `
+                            <div class="voucher-benefit">
+                                <i class="fas fa-gift"></i>
+                                <strong>Ihr Vorteil:</strong> ${voucher.value || voucher.voucherValue}
+                            </div>
+                        ` : ''}
                         <div class="voucher-info">
                             <label>Beschreibung</label>
                             <p>${voucher.description}</p>
