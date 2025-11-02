@@ -585,7 +585,9 @@
             const grid = document.getElementById('qrGrid');
             grid.innerHTML = '';
 
-            console.log('Generating QR codes for partners:', partners);
+            console.log('📋 Generating QR codes for', partners.length, 'partners');
+            console.log('Partners:', partners);
+            console.log('QRCode library available:', typeof QRCode !== 'undefined');
 
             if (!partners || partners.length === 0) {
                 grid.innerHTML = `
@@ -597,7 +599,22 @@
                 return;
             }
 
+            // Check if QRCode library is loaded
+            if (typeof QRCode === 'undefined') {
+                console.error('❌ QRCode library not loaded!');
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; color: #e74c3c; padding: 40px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <p>QRCode Bibliothek konnte nicht geladen werden</p>
+                        <p style="font-size: 14px; margin-top: 10px;">Bitte Seite neu laden</p>
+                    </div>
+                `;
+                return;
+            }
+
             partners.forEach((partner, index) => {
+                console.log(`🔨 Creating card for partner ${index + 1}:`, partner.partnername);
+
                 const card = document.createElement('div');
                 card.className = 'qr-card';
 
@@ -608,13 +625,13 @@
                     category: partner.category
                 });
 
-                const safeId = `qr-${index}-${partner.partnername.replace(/[^a-zA-Z0-9]/g, '')}`;
+                const safeId = `qrcode-canvas-${index}`;
 
                 card.innerHTML = `
                     <h3>${partner.partnername}</h3>
                     <div class="category">${partner.category}</div>
                     <div class="qr-code-container">
-                        <canvas id="${safeId}"></canvas>
+                        <canvas id="${safeId}" width="250" height="250"></canvas>
                     </div>
                     <div class="instructions">
                         <strong>Anleitung:</strong><br>
@@ -625,41 +642,52 @@
                 `;
 
                 grid.appendChild(card);
-
-                // Generate QR code immediately after adding to DOM
-                setTimeout(() => {
-                    const canvas = document.getElementById(safeId);
-                    if (!canvas) {
-                        console.error('Canvas not found:', safeId);
-                        return;
-                    }
-
-                    if (typeof QRCode === 'undefined') {
-                        console.error('QRCode library not loaded');
-                        return;
-                    }
-
-                    QRCode.toCanvas(
-                        canvas,
-                        qrData,
-                        {
-                            width: 250,
-                            margin: 2,
-                            color: {
-                                dark: '#000000',
-                                light: '#ffffff'
-                            }
-                        },
-                        (error) => {
-                            if (error) {
-                                console.error('QR Code generation error for', partner.partnername, ':', error);
-                            } else {
-                                console.log('QR Code generated successfully for', partner.partnername);
-                            }
-                        }
-                    );
-                }, 50 * (index + 1)); // Stagger generation
             });
+
+            // Generate all QR codes after all cards are in DOM
+            setTimeout(() => {
+                partners.forEach((partner, index) => {
+                    const safeId = `qrcode-canvas-${index}`;
+                    const canvas = document.getElementById(safeId);
+
+                    if (!canvas) {
+                        console.error(`❌ Canvas not found for partner ${partner.partnername}:`, safeId);
+                        return;
+                    }
+
+                    const qrData = JSON.stringify({
+                        type: 'BABSY_PARTNER',
+                        partner: partner.partnername,
+                        category: partner.category
+                    });
+
+                    console.log(`🎨 Generating QR code for ${partner.partnername}...`);
+
+                    try {
+                        QRCode.toCanvas(
+                            canvas,
+                            qrData,
+                            {
+                                width: 250,
+                                margin: 2,
+                                color: {
+                                    dark: '#000000',
+                                    light: '#ffffff'
+                                }
+                            },
+                            (error) => {
+                                if (error) {
+                                    console.error(`❌ QR Code generation error for ${partner.partnername}:`, error);
+                                } else {
+                                    console.log(`✅ QR Code generated successfully for ${partner.partnername}`);
+                                }
+                            }
+                        );
+                    } catch (error) {
+                        console.error(`❌ Exception generating QR code for ${partner.partnername}:`, error);
+                    }
+                });
+            }, 100); // Single delay for all QR codes
         }
 
         // Load partners on page load
