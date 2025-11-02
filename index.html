@@ -535,6 +535,7 @@
         </div>
     </footer>
 
+    <script src="js/email-service.js"></script>
     <script>
         // Partner Daten laden
         async function loadPartners() {
@@ -741,12 +742,19 @@
         }
 
         // Generate voucher for partner
-        function generateVoucher(partnerName, description) {
-            // Prompt for user ID/email
-            const userId = prompt('Bitte geben Sie Ihre Mitglieds-ID oder E-Mail-Adresse ein:');
+        async function generateVoucher(partnerName, description) {
+            // Prompt for user email
+            const userId = prompt('Bitte geben Sie Ihre E-Mail-Adresse ein:');
 
             if (!userId || userId.trim() === '') {
-                alert('Gutschein-Generierung abgebrochen. Bitte geben Sie eine gültige Benutzer-ID ein.');
+                alert('Gutschein-Generierung abgebrochen. Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+                return;
+            }
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(userId.trim())) {
+                alert('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
                 return;
             }
 
@@ -765,9 +773,6 @@
                 isRedeemed: false
             };
 
-            // Show success message
-            alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nBenutzer: ${userId}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.`);
-
             // Save to user-specific localStorage
             const userStorageKey = `babsy_vouchers_${userId.trim()}`;
             let vouchers = JSON.parse(localStorage.getItem(userStorageKey) || '[]');
@@ -775,6 +780,30 @@
             localStorage.setItem(userStorageKey, JSON.stringify(vouchers));
 
             console.log('Gutschein generiert für Benutzer', userId, ':', voucher);
+
+            // Send email notification
+            if (window.emailService) {
+                try {
+                    // Try to find partner info from loaded partners
+                    let partnerInfo = null;
+                    if (window.partnersData) {
+                        partnerInfo = window.partnersData.find(p => p.partnername === partnerName);
+                    }
+
+                    await emailService.sendVoucherGeneratedEmail(
+                        userId.trim(),
+                        voucher,
+                        partnerInfo
+                    );
+
+                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nE-Mail: ${userId}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.\n\n📧 Eine Bestätigungs-E-Mail wurde versendet.`);
+                } catch (error) {
+                    console.error('Email error:', error);
+                    alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nE-Mail: ${userId}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.\n\n⚠️ E-Mail konnte nicht versendet werden (siehe Konsole).`);
+                }
+            } else {
+                alert(`Gutschein erfolgreich generiert!\n\nPartner: ${partnerName}\nCode: ${voucherCode}\nE-Mail: ${userId}\n\nDer Gutschein wurde zu Ihrer Liste hinzugefügt.`);
+            }
         }
     </script>
 </body>

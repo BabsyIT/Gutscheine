@@ -1,0 +1,36 @@
+{
+  "mailcow": {
+    "smtp": {
+      "host": "mail.ihredomain.ch",
+      "port": 587,
+      "secure": false,
+      "auth": {
+        "user": "gutscheine@babsy.ch",
+        "pass": "IHR_MAILCOW_PASSWORT"
+      }
+    },
+    "from": {
+      "name": "Babsy Gutscheine",
+      "email": "gutscheine@babsy.ch"
+    },
+    "templates": {
+      "voucherGenerated": {
+        "subject": "Ihr Babsy Gutschein für {{partnerName}}",
+        "enabled": true
+      },
+      "voucherRedeemed": {
+        "subject": "Gutschein eingelöst bei {{partnerName}}",
+        "enabled": true
+      },
+      "partnerNotification": {
+        "subject": "Neuer Gutschein für Ihren Partner",
+        "enabled": false
+      }
+    }
+  },
+  "demo": {
+    "enabled": true,
+    "logOnly": true,
+    "comment": "In Demo-Modus werden E-Mails nur in der Konsole geloggt, nicht wirklich versendet"
+  }
+}
