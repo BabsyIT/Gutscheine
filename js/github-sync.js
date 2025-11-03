@@ -63,12 +63,12 @@ class GitHubSync {
 
         try {
             // Fetch current vouchers.json from GitHub
-            const currentData = await this.fetchFileFromGitHub();
+            const currentFile = await this.fetchFileFromGitHub();
 
             // Merge with pending vouchers
             const voucherMap = new Map();
-            if (currentData && currentData.vouchers) {
-                currentData.vouchers.forEach(v => voucherMap.set(v.id, v));
+            if (currentFile && currentFile.data && currentFile.data.vouchers) {
+                currentFile.data.vouchers.forEach(v => voucherMap.set(v.id, v));
             }
             allPendingVouchers.forEach(v => voucherMap.set(v.id, v));
 
@@ -85,7 +85,7 @@ class GitHubSync {
             };
 
             // Push to GitHub
-            await this.updateFileOnGitHub(newData);
+            await this.updateFileOnGitHub(newData, currentFile?.sha);
 
             // Clear pending queue after successful sync
             localStorage.removeItem('pending_vouchers_export');
@@ -130,10 +130,7 @@ class GitHubSync {
     }
 
     // Update file on GitHub
-    async updateFileOnGitHub(newData) {
-        // First get the current SHA
-        const current = await this.fetchFileFromGitHub();
-
+    async updateFileOnGitHub(newData, existingSha = null) {
         const content = JSON.stringify(newData, null, 2);
         const contentBase64 = btoa(unescape(encodeURIComponent(content)));
 
@@ -145,8 +142,8 @@ class GitHubSync {
             branch: this.config.branch
         };
 
-        if (current && current.sha) {
-            body.sha = current.sha;
+        if (existingSha) {
+            body.sha = existingSha;
         }
 
         const response = await fetch(url, {
