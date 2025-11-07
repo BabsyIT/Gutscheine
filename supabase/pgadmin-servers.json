@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Babsy PostgreSQL (Local)",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "babsy_vouchers",
+      "Username": "postgres",
+      "SSLMode": "prefer",
+      "PassFile": "/tmp/pgpassfile"
+    }
+  }
+}

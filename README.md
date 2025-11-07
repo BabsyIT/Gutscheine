@@ -1,250 +1,330 @@
-# Babsy Partnergutscheine System
+# 🎫 Babsy Partnergutscheine System
 
-Ein vollständiges Gutschein-Verwaltungssystem mit Partnerkarte, QR-Code-Scanner und hybrider Datenspeicherung.
+Vollständiges, production-ready Gutschein-Verwaltungssystem mit Docker + Supabase Support.
 
-## 🚀 Live Demo
+## 🌟 Features
 
-**Produktiv-System**: https://babsyit.github.io/Gutscheine/
+- 🎫 **Digitale Gutschein-Verwaltung** - Generieren, verwalten, einlösen
+- 🗺️ **Interaktive Partner-Karte** - 20+ Partner auf Schweizer Karte
+- 📱 **QR-Code Scanner** - Kamera-basierte Einlösung im Laden
+- 🔐 **Sichere Authentifizierung** - JWT + bcrypt, Role-based Access Control
+- 💾 **Flexible Datenspeicherung** - Cloud (Supabase) oder Self-Hosted
+- 🐳 **Docker-basiert** - Production-ready Container Setup
+- 📊 **Admin Dashboard** - Statistiken und Auswertungen
+- 🔄 **Automatische Backups** - Tägliche PostgreSQL Backups
+- 📈 **Monitoring** - Optional mit Prometheus + Grafana
 
-## 📖 Dokumentation
+## 🚀 Quick Start
 
-- **[DEMO-GUIDE.md](DEMO-GUIDE.md)** - Schritt-für-Schritt Anleitung für Live-Demos
-- **[SETUP.md](SETUP.md)** - Technisches Setup und Architektur
+### Option 1: Self-Hosted (Empfohlen)
 
-## Features
+Vollständige Kontrolle über alle Daten - läuft auf deinem eigenen Server!
 
-- 🗺️ **Interaktive Partner-Karte** - Zeigt alle 20 Partner auf einer Schweizer Karte
-- 🎫 **Gutschein-Generierung** - Direkt von der Partnerkarte aus
-- 📱 **QR-Code Scanner** - Gutscheine im Laden einlösen (Kamera-basiert)
-- 🌐 **Online/Offline Partner** - Unterschiedliche Flows für physische Läden vs. Online-Shops
-- 📊 **Admin Dashboard** - Babsy Statistiken und Auswertungen
-- 💾 **Hybrid Storage** - localStorage + zentrale JSON-Datenbank
-- 🔄 **Sync-Tracking** - Zeigt ausstehende Synchronisationen an
-- 📥 **Export-Funktion** - Manuelle Synchronisation für Demo
-- 📱 **Responsive Design** - Optimiert für Desktop und Mobile
-- 🎨 **Einheitliches Design** - Konsistente Farben und Stile
+```bash
+# 1. Repository klonen
+git clone https://github.com/BabsyIT/Gutscheine.git
+cd Gutscheine
 
-## Projektstruktur
+# 2. Setup (automatisch)
+./setup-selfhosted.sh
+
+# 3. Datenbank initialisieren
+cd backend && npx prisma db push
+
+# Fertig! 🎉
+# Frontend: http://localhost:8080
+# Backend:  http://localhost:3000
+# pgAdmin:  http://localhost:5050
+```
+
+**📖 Vollständige Anleitung:** [SELF-HOSTED-SUPABASE.md](SELF-HOSTED-SUPABASE.md)
+
+### Option 2: Cloud (Supabase)
+
+Einfachster Start mit Supabase Cloud Database:
+
+```bash
+# 1. Repository klonen
+git clone https://github.com/BabsyIT/Gutscheine.git
+cd Gutscheine
+
+# 2. Supabase Account erstellen (kostenlos)
+# → supabase.com
+
+# 3. Environment konfigurieren
+cp .env.docker.example .env
+nano .env  # DATABASE_URL von Supabase einfügen
+
+# 4. Starten
+docker-compose up -d
+```
+
+**📖 Vollständige Anleitung:** [QUICKSTART.md](QUICKSTART.md)
+
+## 📁 Projektstruktur
 
 ```
 Gutscheine/
-├── index.html                   # Startseite mit Partner-Übersicht
-├── karte.html                   # Interaktive Partnerkarte mit Leaflet
-├── gutscheine.html              # Gutschein-Verwaltung (Kunde)
-├── admin.html                   # Admin Dashboard (Babsy)
-├── partner-qrcodes.html         # QR-Codes für Partner zum Ausdrucken
-├── styles.css                   # Gemeinsame Styles
-├── data/
-│   ├── partners.json            # Partner-Daten mit GPS-Koordinaten
-│   └── vouchers.json            # Zentrale Gutschein-Datenbank
-├── scripts/
-│   ├── generate-voucher.js      # Node.js Script: Gutschein generieren
-│   └── redeem-voucher.js        # Node.js Script: Gutschein einlösen
-├── .github/
-│   └── workflows/
-│       └── manage-vouchers.yml  # GitHub Action für Gutschein-Verwaltung
-├── DEMO-GUIDE.md                # Demo-Anleitung
-├── SETUP.md                     # Technische Dokumentation
-└── README.md                    # Diese Datei
+├── backend/                    # 🚀 Express REST API
+│   ├── src/
+│   │   ├── routes/            # API Endpoints
+│   │   ├── services/          # Business Logic
+│   │   ├── middleware/        # Auth, Logging, Errors
+│   │   └── config/            # Configuration
+│   ├── prisma/
+│   │   └── schema.prisma      # Database Schema
+│   └── Dockerfile
+├── frontend-docker/           # 🎨 Nginx Frontend Container
+├── supabase/                  # 🗄️ Self-Hosted DB Config
+│   ├── init/                  # Init Scripts
+│   └── backups/               # Automated Backups
+├── data/                      # 📦 Original JSON Data
+├── js/                        # 💻 Frontend JavaScript
+├── images/                    # 🖼️ Partner Logos
+├── docker-compose.yml         # ☁️ Cloud Setup
+├── docker-compose.selfhosted.yml  # 🏠 Self-Hosted Setup
+├── Makefile                   # 🛠️ Quick Commands
+└── *.html                     # 📄 Frontend Pages
 ```
 
-## Schnellstart
+## 🛠️ Technologie Stack
 
-### Für die Demo:
+### Backend
+- **Runtime**: Node.js 18 LTS
+- **Framework**: Express.js
+- **Database**: PostgreSQL 15
+- **ORM**: Prisma
+- **Auth**: JWT + bcrypt
+- **Caching**: Redis
 
-1. Öffne: https://babsyit.github.io/Gutscheine/gutscheine.html
-2. Klicke: **"Demo-Daten laden"**
-3. Teste: QR-Code Scanner oder Online-Partner Flow
-4. Siehe: [DEMO-GUIDE.md](DEMO-GUIDE.md) für detaillierte Szenarien
+### Frontend
+- **Core**: Vanilla JavaScript
+- **Server**: Nginx
+- **Map**: Leaflet.js
+- **QR**: html5-qrcode
+- **Icons**: Font Awesome
 
-### Für Entwickler:
+### DevOps
+- **Container**: Docker + Docker Compose
+- **Database**: Supabase oder Self-Hosted PostgreSQL
+- **Monitoring**: Prometheus + Grafana (optional)
+- **Backups**: Automated daily backups
 
-Siehe [SETUP.md](SETUP.md) für vollständige Setup-Anleitung.
+## 🎯 Deployment-Optionen
 
-## Verwendung
+### 1️⃣ Self-Hosted (Volle Kontrolle)
 
-### Als Kunde: Gutschein einlösen
+**Vorteile:**
+- ✅ Volle Datenkontrolle
+- ✅ DSGVO-konform
+- ✅ Keine Cloud-Kosten
+- ✅ Unbegrenzte Skalierung
 
-**Physischer Laden** (z.B. E-TriColor):
-1. Öffne [gutscheine.html](https://babsyit.github.io/Gutscheine/gutscheine.html)
-2. Wähle einen aktiven Gutschein
-3. Klicke **"QR scannen"**
-4. Scanne den QR-Code im Laden
-5. Gutschein wird validiert und eingelöst
+**Kosten:** ~5-15€/Monat (VPS bei Hetzner/Netcup)
 
-**Online-Partner** (z.B. KidisArt):
-1. Öffne [gutscheine.html](https://babsyit.github.io/Gutscheine/gutscheine.html)
-2. Wähle einen Online-Gutschein
-3. Klicke **"Code zeigen"**
-4. Nutze den Code auf der Partner-Website
+**Setup:** [SELF-HOSTED-SUPABASE.md](SELF-HOSTED-SUPABASE.md)
 
-### Als Partner: QR-Code generieren
+### 2️⃣ Cloud mit Supabase
 
-1. Öffne [partner-qrcodes.html](https://babsyit.github.io/Gutscheine/partner-qrcodes.html)
-2. Suche deinen Partner-Namen
-3. Drucke den QR-Code aus
-4. Hänge ihn an der Kasse auf
+**Vorteile:**
+- ✅ Schnellster Start
+- ✅ Automatische Backups
+- ✅ Managed Database
+- ✅ Free Tier verfügbar
 
-### Als Babsy: Statistiken ansehen
+**Kosten:** $0-25/Monat
 
-1. Öffne [admin.html](https://babsyit.github.io/Gutscheine/admin.html)
-2. Siehe Gesamt-Statistiken
-3. Filtere nach Partner
-4. Exportiere Reports
+**Setup:** [QUICKSTART.md](QUICKSTART.md)
 
-## Technische Details
+### 3️⃣ Hybrid
 
-### Hybrid Storage System
+**Vorteile:**
+- ✅ Backend self-hosted
+- ✅ Database in Cloud
+- ✅ Best of both worlds
 
-Das System verwendet zwei Datenschichten:
+**Setup:** [DOCKER-DEPLOYMENT.md](DOCKER-DEPLOYMENT.md)
 
-**1. Zentrale Datenbank** (`data/vouchers.json`):
-- Git-versioniert
-- Für alle Benutzer sichtbar
-- Babsy Admin-Dashboard liest hieraus
-- Wird via GitHub Actions oder manuell aktualisiert
+## 📚 Dokumentation
 
-**2. Lokaler Speicher** (Browser localStorage):
-- Benutzerspezifisch
-- Offline-fähig
-- Sofortige Updates
-- Wird mit zentraler DB synchronisiert
+| Dokument | Beschreibung | Zeitaufwand |
+|----------|--------------|-------------|
+| [QUICKSTART.md](QUICKSTART.md) | Schnellstart mit Cloud | 30 Min |
+| [SELF-HOSTED-SUPABASE.md](SELF-HOSTED-SUPABASE.md) | Self-Hosted Setup | 20 Min |
+| [DOCKER-DEPLOYMENT.md](DOCKER-DEPLOYMENT.md) | Deployment Guide | - |
+| [PRODUCTION-READINESS.md](PRODUCTION-READINESS.md) | Production Planning | - |
+| [backend/README.md](backend/README.md) | API Dokumentation | - |
 
-**Merge-Strategie**:
-```javascript
-// Beim Laden:
-zentrale_gutscheine = fetch('data/vouchers.json')
-lokale_gutscheine = localStorage.getItem('babsy_vouchers')
-alle_gutscheine = [...zentrale, ...nur_lokale]
+## 🎮 Makefile Commands
 
-// Beim Speichern:
-localStorage.setItem('babsy_vouchers', gutscheine)
-markiere_als_pending_sync()
-export_funktion_für_manuellen_sync()
-```
-
-### QR-Code Validierung
-
-```javascript
-// Partner QR-Code Format:
-{
-  "type": "BABSY_PARTNER",
-  "partner": "E-TriColor",
-  "category": "Print & Druck"
-}
-
-// Beim Scannen:
-if (qr_code.partner === gutschein.partner) {
-  einlösen() // ✅
-} else {
-  fehler("Falscher Partner!") // ❌
-}
-```
-
-## Setup (für Entwickler)
-
-### 1. Repository klonen
+Das Projekt enthält ein **Makefile** mit praktischen Shortcuts:
 
 ```bash
-git clone https://github.com/BabsyIT/Gutscheine.git
-cd Gutscheine
+# Setup & Start
+make setup          # Erstmalige Einrichtung
+make start          # Alle Services starten
+make stop           # Alle Services stoppen
+make restart        # Neu starten
+make logs           # Logs anzeigen
+
+# Datenbank
+make db-init        # Schema initialisieren
+make db-migrate     # JSON Daten migrieren
+make db-shell       # PostgreSQL Shell
+
+# Backup & Restore
+make backup         # Backup erstellen
+make restore        # Letztes Backup wiederherstellen
+make backup-list    # Alle Backups anzeigen
+
+# Development
+make dev            # Dev-Mode mit Live-Logs
+make test           # Tests ausführen
+make health         # Health Check
+
+# Hilfe
+make help           # Alle Commands anzeigen
 ```
 
-### 2. GitHub Actions konfigurieren (optional)
+## 🔐 Sicherheit
 
-Für automatische Gutschein-Verwaltung via GitHub Actions:
+- ✅ **JWT Authentication** - Kurze Access Tokens (15 Min) + Refresh Tokens (7 Tage)
+- ✅ **Password Hashing** - bcrypt mit 12 Rounds
+- ✅ **Rate Limiting** - 5 Login-Versuche pro 15 Minuten
+- ✅ **CORS** - Konfigurierbare Origins
+- ✅ **Helmet** - Security Headers
+- ✅ **SQL Injection** - Verhindert durch Prisma ORM
+- ✅ **XSS Protection** - Content Security Policy
+- ✅ **Audit Logging** - Alle wichtigen Aktionen werden geloggt
 
-1. Gehe zu: `Settings` → `Actions` → `General`
-2. Aktiviere: `Read and write permissions`
-3. Die Workflow-Datei muss manuell via GitHub Web UI hinzugefügt werden
-4. Siehe [SETUP.md](SETUP.md) für Details
+## 📊 API Endpoints
 
-### 3. Lokal testen
-
-```bash
-# Öffne einfach die HTML-Dateien im Browser
-open index.html
-# oder
-python -m http.server 8000
-# dann: http://localhost:8000
+### Authentication
+```
+POST   /api/auth/register       # Registrierung
+POST   /api/auth/login          # Login
+POST   /api/auth/refresh        # Token erneuern
+POST   /api/auth/logout         # Logout
+GET    /api/auth/me             # Profil abrufen
 ```
 
-## Farbschema
-
-```css
---primary-color: #a71a80      /* Magenta/Pink */
---secondary-color: #009fad    /* Türkis/Cyan */
---background-color: #f3f4f6   /* Hellgrau */
---card-color: #ffffff         /* Weiß */
---text-color: #1f2937         /* Dunkelgrau */
+### Vouchers
+```
+GET    /api/vouchers            # Meine Gutscheine
+POST   /api/vouchers            # Gutschein generieren
+GET    /api/vouchers/:id        # Gutschein Details
+POST   /api/vouchers/:id/redeem # Gutschein einlösen
+POST   /api/vouchers/validate   # QR-Code validieren
 ```
 
-## Browser-Unterstützung
+### Partners
+```
+GET    /api/partners            # Alle Partner (public)
+GET    /api/partners/:id        # Partner Details
+GET    /api/partners/:id/stats  # Partner Statistiken (admin)
+```
 
-- Chrome/Edge (letzte 2 Versionen)
-- Firefox (letzte 2 Versionen)
-- Safari (letzte 2 Versionen)
-- Mobile Browser (iOS Safari, Chrome Mobile)
+Vollständige API-Dokumentation: [backend/README.md](backend/README.md)
 
-## Technologien
+## 💰 Kosten-Vergleich
 
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **Karte**: Leaflet.js 1.9.4 + OpenStreetMap
-- **QR-Codes**: qrcode.js 1.5.3 (Generierung) + html5-qrcode 2.3.8 (Scanner)
-- **Icons**: Font Awesome 6.4.0
-- **Backend**: GitHub Actions + Node.js Scripts
-- **Storage**: Hybrid (localStorage + JSON-Datenbank)
-- **Hosting**: GitHub Pages
+### Self-Hosted
+| Service | Anbieter | Preis/Monat |
+|---------|----------|-------------|
+| VPS (4GB RAM, 2 CPU) | Hetzner | 4,51€ |
+| VPS (8GB RAM, 2 CPU) | Netcup | 6,00€ |
+| VPS (4GB RAM, 2 CPU) | DigitalOcean | $12 (~11€) |
 
-## Roadmap / Nächste Schritte
+**Total: 5-12€/Monat** (unbegrenzte Nutzer!)
 
-**Für die Demo** (Aktuell fertig):
-- ✅ index.html Startseite
-- ✅ Seiten stilistisch angleichen
-- ✅ QR-Code-Generierung und -Scanner
-- ✅ Admin-Dashboard (Babsy)
-- ✅ Partner QR-Codes zum Ausdrucken
-- ✅ Hybrid Storage System
+### Cloud (Supabase)
+| Tier | Preis/Monat | Limits |
+|------|-------------|--------|
+| Free | $0 | 500 MB DB, 2 GB Bandwidth |
+| Pro | $25 | 8 GB DB, 50 GB Bandwidth |
+| Team | $599 | 32 GB DB, 250 GB Bandwidth |
 
-**Für die Produktion** (Siehe [DEMO-GUIDE.md](DEMO-GUIDE.md)):
-- [ ] Backend API (Node.js/Express)
-- [ ] Echte Datenbank (PostgreSQL/MongoDB)
-- [ ] Authentifizierung (OAuth/JWT)
-- [ ] Partner Portal (Separate Admin-UI)
-- [ ] E-Mail Service (SendGrid/AWS SES)
+**Empfehlung:** Self-Hosted ab 100+ Nutzer deutlich günstiger!
+
+## 🏆 Production Ready Features
+
+- ✅ **Multi-stage Docker Builds** - Optimierte Container-Größe
+- ✅ **Health Checks** - Für alle Services
+- ✅ **Graceful Shutdown** - Sauberes Beenden
+- ✅ **Structured Logging** - Winston mit Log Rotation
+- ✅ **Database Migrations** - Prisma Migrations
+- ✅ **Automated Backups** - Täglich mit Rotation
+- ✅ **Monitoring Ready** - Prometheus + Grafana
+- ✅ **HTTPS Support** - Via Nginx Reverse Proxy
+- ✅ **Environment Variables** - Secure Configuration
+- ✅ **Non-Root User** - Security Best Practice
+
+## 📈 Roadmap
+
+### ✅ Fertig (v1.0)
+- [x] Backend REST API
+- [x] JWT Authentication
+- [x] Docker Setup
+- [x] Self-Hosted Supabase
+- [x] Automated Backups
+- [x] Admin Dashboard
+- [x] QR-Code Scanner
+- [x] Partner Map
+
+### 🚧 In Arbeit (v1.1)
+- [ ] Email Service (SendGrid)
+- [ ] PDF Export für Gutscheine
+- [ ] Erweiterte Analytics
 - [ ] Mobile App (React Native)
-- [ ] PDF-Export für Gutscheine
-- [ ] Analytics/Tracking
 
-## Deployment
+### 📅 Geplant (v2.0)
+- [ ] Push Notifications
+- [ ] Payment Integration
+- [ ] Multi-Tenant Support
+- [ ] White-Label Solution
 
-### GitHub Pages (Aktuell)
+## 🤝 Beitragen
 
-**Live URL**: https://babsyit.github.io/Gutscheine/
+Beiträge sind willkommen! Bitte:
 
-Das System ist bereits deployed und funktioniert komplett ohne Backend-Server!
+1. Fork das Repository
+2. Feature Branch erstellen (`git checkout -b feature/amazing`)
+3. Changes committen (`git commit -m 'Add amazing feature'`)
+4. Branch pushen (`git push origin feature/amazing`)
+5. Pull Request öffnen
 
-**Setup**:
-1. Repository Settings → Pages
-2. Source: `main` branch
-3. Automatisches Deployment bei jedem Push
+## 🐛 Bug Reports
 
-### Alternative Hosting-Optionen
+Probleme? Öffne ein Issue:
+https://github.com/BabsyIT/Gutscheine/issues
 
-**Netlify** oder **Vercel** funktionieren ebenfalls:
-```bash
-# Einfach das Repository verbinden
-# Keine Build-Konfiguration nötig (statische Seite)
-```
+Bitte inkludiere:
+- Beschreibung des Problems
+- Schritte zur Reproduktion
+- Erwartetes vs. tatsächliches Verhalten
+- System-Info (OS, Docker Version, etc.)
 
-## Support & Feedback
+## 📄 Lizenz
 
-Bei Fragen oder Problemen:
-- 📖 [DEMO-GUIDE.md](DEMO-GUIDE.md) - Vollständige Demo-Anleitung
-- 🛠️ [SETUP.md](SETUP.md) - Technische Dokumentation
-- 🐛 [GitHub Issues](https://github.com/BabsyIT/Gutscheine/issues) - Bug Reports
-- 📊 [GitHub Actions](https://github.com/BabsyIT/Gutscheine/actions) - Workflow Status
+© 2025 Babsy. All rights reserved.
 
-## Lizenz
+## 🙏 Credits
 
-© 2025 Babsy. Alle Rechte vorbehalten.
+- **Leaflet.js** - Interactive maps
+- **Prisma** - Database ORM
+- **Express** - Web framework
+- **Supabase** - PostgreSQL images
+- **Font Awesome** - Icons
+- **Docker** - Containerization
+
+## 📞 Support
+
+- **Email**: support@babsy.ch
+- **GitHub**: https://github.com/BabsyIT/Gutscheine
+- **Dokumentation**: Siehe `/docs` Ordner
+
+---
+
+**Made with ❤️ in Switzerland**
+
+🚀 **Ready to start?** → [QUICKSTART.md](QUICKSTART.md) oder [SELF-HOSTED-SUPABASE.md](SELF-HOSTED-SUPABASE.md)

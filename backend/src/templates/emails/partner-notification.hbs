@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuer Gutschein</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #009fad 0%, #006d7a 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+        }
+        .info-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .info-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .info-table tr:last-child td {
+            border-bottom: none;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎫 Neuer Gutschein generiert</h1>
+    </div>
+
+    <div class="content">
+        <p>Hallo {{partnerName}},</p>
+
+        <p>Ein neuer Gutschein für Ihr Geschäft wurde generiert.</p>
+
+        <table class="info-table">
+            <tr>
+                <td style="width: 40%;"><strong>Gutschein-Code:</strong></td>
+                <td style="font-family: monospace; font-size: 16px; color: #a71a80;"><strong>{{voucherCode}}</strong></td>
+            </tr>
+            <tr>
+                <td><strong>Kunde:</strong></td>
+                <td>{{userName}}</td>
+            </tr>
+            <tr>
+                <td><strong>E-Mail:</strong></td>
+                <td>{{userEmail}}</td>
+            </tr>
+            <tr>
+                <td><strong>Beschreibung:</strong></td>
+                <td>{{description}}</td>
+            </tr>
+            <tr>
+                <td><strong>Generiert am:</strong></td>
+                <td>{{createdAt}}</td>
+            </tr>
+        </table>
+
+        <p style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0;">
+            <strong>ℹ️ Information:</strong> Der Kunde kann diesen Gutschein bei Ihnen einlösen.
+            Bitte prüfen Sie den QR-Code beim Scannen und vergewissern Sie sich,
+            dass der Code mit diesem übereinstimmt.
+        </p>
+
+        <p style="color: #666; font-size: 14px;">
+            Sie erhalten diese Benachrichtigung, damit Sie über neue Gutscheine für Ihr Geschäft informiert sind.
+        </p>
+    </div>
+
+    <div class="footer">
+        <p><strong>Babsy Partnergutscheine</strong></p>
+        <p>Partner-Benachrichtigung</p>
+        <p>© {{currentYear}} Babsy. Alle Rechte vorbehalten.</p>
+    </div>
+</body>
+</html>

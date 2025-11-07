@@ -1,0 +1,23 @@
+# Environment
+.env
+.env.local
+.env.production
+.env.docker
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+docker-compose.override.yml
