@@ -8,32 +8,55 @@ class EmailService {
   constructor() {
     this.transporter = null;
     this.templates = {};
+    this.authMethod = process.env.EMAIL_AUTH_METHOD || 'basic'; // 'basic' or 'oauth2'
     this.initTransporter();
     this.loadTemplates();
   }
 
   /**
    * Initialize Exchange Online SMTP Transporter
+   * Supports both Basic Auth and OAuth 2.0
    */
   initTransporter() {
-    const config = {
-      host: process.env.SMTP_HOST || 'smtp.office365.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
+    const host = process.env.SMTP_HOST || 'smtp.office365.com';
+    const port = parseInt(process.env.SMTP_PORT || '587');
+    const user = process.env.SMTP_USER;
+
+    if (!user) {
+      logger.warn('⚠️  Email service not configured. Set SMTP_USER.');
+      return;
+    }
+
+    let config = {
+      host,
+      port,
       secure: false, // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD
-      },
       tls: {
         ciphers: 'SSLv3',
         rejectUnauthorized: false
       }
     };
 
-    // Check if credentials are provided
-    if (!config.auth.user || !config.auth.pass) {
-      logger.warn('⚠️  Email service not configured. Set SMTP_USER and SMTP_PASSWORD.');
-      return;
+    // Configure authentication based on method
+    if (this.authMethod === 'oauth2') {
+      config.auth = this.getOAuth2Config();
+      if (!config.auth) {
+        logger.warn('⚠️  OAuth2 not configured. Falling back to basic auth.');
+        this.authMethod = 'basic';
+      }
+    }
+
+    // Fallback to basic auth
+    if (this.authMethod === 'basic') {
+      const password = process.env.SMTP_PASSWORD;
+      if (!password) {
+        logger.warn('⚠️  Email service not configured. Set SMTP_PASSWORD.');
+        return;
+      }
+      config.auth = {
+        user,
+        pass: password
+      };
     }
 
     try {
@@ -44,11 +67,72 @@ class EmailService {
         if (error) {
           logger.error('❌ Email service connection failed:', error.message);
         } else {
-          logger.info('✅ Email service ready (Exchange Online)');
+          logger.info(`✅ Email service ready (Exchange Online - ${this.authMethod.toUpperCase()})`);
         }
       });
     } catch (error) {
       logger.error('❌ Failed to initialize email service:', error);
+    }
+  }
+
+  /**
+   * Get OAuth 2.0 configuration
+   */
+  getOAuth2Config() {
+    const clientId = process.env.AZURE_CLIENT_ID;
+    const clientSecret = process.env.AZURE_CLIENT_SECRET;
+    const tenantId = process.env.AZURE_TENANT_ID;
+    const user = process.env.SMTP_USER;
+
+    // Check if all OAuth credentials are provided
+    if (!clientId || !clientSecret || !tenantId) {
+      return null;
+    }
+
+    // Use Microsoft Identity Platform for OAuth2
+    return {
+      type: 'OAuth2',
+      user,
+      clientId,
+      clientSecret,
+      refreshToken: process.env.AZURE_REFRESH_TOKEN,
+      accessToken: process.env.AZURE_ACCESS_TOKEN,
+      expires: process.env.AZURE_TOKEN_EXPIRES,
+      // Use Microsoft Graph token endpoint
+      accessUrl: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`
+    };
+  }
+
+  /**
+   * Get OAuth 2.0 Access Token using Client Credentials Flow
+   * This is for app-only authentication (service accounts)
+   */
+  async getOAuth2AccessToken() {
+    const clientId = process.env.AZURE_CLIENT_ID;
+    const clientSecret = process.env.AZURE_CLIENT_SECRET;
+    const tenantId = process.env.AZURE_TENANT_ID;
+
+    if (!clientId || !clientSecret || !tenantId) {
+      throw new Error('Azure OAuth2 credentials not configured');
+    }
+
+    try {
+      const { ClientSecretCredential } = require('@azure/identity');
+
+      const credential = new ClientSecretCredential(
+        tenantId,
+        clientId,
+        clientSecret
+      );
+
+      // Get token for Microsoft Graph (includes email sending permissions)
+      const token = await credential.getToken('https://graph.microsoft.com/.default');
+
+      logger.info('✅ OAuth2 access token obtained');
+      return token.token;
+    } catch (error) {
+      logger.error('❌ Failed to get OAuth2 access token:', error);
+      throw error;
     }
   }
 

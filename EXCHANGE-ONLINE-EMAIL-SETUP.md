@@ -54,15 +54,58 @@ Set-CASMailbox -Identity "noreply@ihredomain.ch" -SmtpClientAuthenticationDisabl
 Get-CASMailbox -Identity "noreply@ihredomain.ch" | Select SmtpClientAuthenticationDisabled
 ```
 
-### 2. App-Passwort erstellen (wenn MFA aktiviert)
+### 2. Authentifizierungsmethode wählen
 
-Wenn Multi-Faktor-Authentifizierung (MFA) aktiviert ist:
+Das System unterstützt **zwei Authentifizierungsmethoden**:
+
+#### Option A: OAuth 2.0 (EMPFOHLEN) ✅
+
+**Vorteile:**
+- ✅ **Sicherer**: Keine Passwörter in Environment Variables
+- ✅ **Empfohlen von Microsoft**: Basic Auth wird schrittweise deaktiviert
+- ✅ **Granulare Berechtigungen**: Nur Mail.Send Berechtigung
+- ✅ **Audit-fähig**: Bessere Nachvollziehbarkeit in Azure AD Logs
+- ✅ **Automatisches Token-Management**: Kein manuelles Refresh
+
+**Setup:**
+📖 Siehe vollständige Anleitung: [`backend/OAUTH2-EXCHANGE-SETUP.md`](backend/OAUTH2-EXCHANGE-SETUP.md)
+
+**Kurzversion:**
+1. Azure App Registration erstellen
+2. `Mail.Send` Permission hinzufügen
+3. Admin Consent erteilen
+4. Environment Variables setzen:
+   ```bash
+   EMAIL_AUTH_METHOD=oauth2
+   AZURE_CLIENT_ID=your-app-id
+   AZURE_CLIENT_SECRET=your-secret
+   AZURE_TENANT_ID=your-tenant-id
+   ```
+
+**Weiter zu:** [OAuth 2.0 Setup Guide](backend/OAUTH2-EXCHANGE-SETUP.md)
+
+#### Option B: Basic Authentication (App-Passwort)
+
+⚠️ **Nur empfohlen wenn:**
+- Kein Azure AD Admin-Zugriff vorhanden
+- Schneller Setup für Testing benötigt
+- OAuth 2.0 aus technischen Gründen nicht möglich
+
+**Wenn Multi-Faktor-Authentifizierung (MFA) aktiviert ist:**
 
 1. Gehe zu **MyAccount** (account.microsoft.com)
 2. **Security** → **Additional security verification**
 3. **App passwords**
 4. Erstelle neues App-Passwort für "Babsy Voucher System"
 5. **Kopiere das Passwort** (wird nur einmal angezeigt!)
+
+**Environment Variables:**
+```bash
+EMAIL_AUTH_METHOD=basic  # oder Variable weglassen
+SMTP_PASSWORD=your-app-password
+```
+
+---
 
 ### 3. Environment Variables konfigurieren
 
@@ -260,7 +303,7 @@ docker-compose -f docker-compose.selfhosted.yml logs backend | grep "❌ Failed 
 
 ## 🚨 Troubleshooting
 
-### Problem: "Authentication failed"
+### Problem: "Authentication failed" (Basic Auth)
 
 **Lösung 1: SMTP Auth prüfen**
 ```powershell
@@ -277,6 +320,37 @@ Get-CASMailbox -Identity "your-email@domain.com" | Select SmtpClientAuthenticati
 # Modern Auth aktivieren (Admin)
 Set-OrganizationConfig -OAuth2ClientProfileEnabled $true
 ```
+
+### Problem: OAuth 2.0 Fehler
+
+**"invalid_client"**
+- Überprüfe `AZURE_CLIENT_ID` und `AZURE_CLIENT_SECRET`
+- Stelle sicher, dass Client Secret nicht abgelaufen ist
+- Erstelle neues Secret in Azure Portal
+
+**"insufficient_privileges"**
+- API Permission `Mail.Send` fehlt
+- Admin Consent nicht erteilt
+- → Azure Portal → App → API permissions → Grant admin consent
+
+**"MailboxNotEnabledForRESTAPI"**
+- Mailbox-Berechtigungen fehlen
+- Führe PowerShell-Befehl aus:
+  ```powershell
+  Add-MailboxPermission -Identity "your-email@domain.com" `
+    -User "YOUR_APPLICATION_ID" `
+    -AccessRights FullAccess
+  ```
+
+**"Falling back to basic auth" in Logs**
+- OAuth-Konfiguration unvollständig
+- Stelle sicher, dass alle Variablen gesetzt sind:
+  - `EMAIL_AUTH_METHOD=oauth2`
+  - `AZURE_CLIENT_ID`
+  - `AZURE_CLIENT_SECRET`
+  - `AZURE_TENANT_ID`
+
+📖 **Detailliertes OAuth Troubleshooting:** Siehe [OAUTH2-EXCHANGE-SETUP.md](backend/OAUTH2-EXCHANGE-SETUP.md#troubleshooting)
 
 ### Problem: "Connection timeout"
 
@@ -391,16 +465,33 @@ SMTP_PASSWORD=your-smtp-password
 
 ## ✅ Checkliste
 
+**Allgemein:**
 - [ ] Exchange Online Postfach erstellt
-- [ ] SMTP Auth aktiviert
-- [ ] App-Passwort erstellt (bei MFA)
-- [ ] `.env` konfiguriert
+- [ ] SMTP Auth aktiviert (für Basic Auth)
+
+**Authentifizierung (wähle eine):**
+- [ ] **Option A (empfohlen):** OAuth 2.0 eingerichtet
+  - [ ] Azure App Registration erstellt
+  - [ ] Mail.Send Permission hinzugefügt
+  - [ ] Admin Consent erteilt
+  - [ ] OAuth Environment Variables konfiguriert
+  - [ ] Token-Generierung getestet
+- [ ] **Option B:** Basic Auth eingerichtet
+  - [ ] App-Passwort erstellt (bei MFA)
+  - [ ] SMTP_PASSWORD in .env konfiguriert
+
+**Setup:**
+- [ ] `.env` vollständig konfiguriert
 - [ ] Backend neu gestartet
-- [ ] Test-E-Mail versendet
+- [ ] Test-E-Mail erfolgreich versendet
+- [ ] Logs überprüft (keine Fehler)
+
+**Produktions-Vorbereitung:**
 - [ ] SPF Record konfiguriert
 - [ ] DKIM aktiviert
 - [ ] Templates angepasst (optional)
 - [ ] Monitoring eingerichtet
+- [ ] Test-E-Mails an verschiedene Provider gesendet (Gmail, Outlook, etc.)
 
 ## 📞 Support
 
