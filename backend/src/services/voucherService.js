@@ -1,6 +1,7 @@
 const { prisma } = require('../config/database');
 const logger = require('../utils/logger');
 const QRCode = require('qrcode');
+const emailService = require('./emailService');
 
 class VoucherService {
   /**
@@ -98,6 +99,11 @@ class VoucherService {
       });
 
       logger.info(`Voucher generated: ${code} for user ${userId}`);
+
+      // Send email notification (async, don't wait)
+      this.sendVoucherGeneratedEmail(voucher).catch(err => {
+        logger.error('Failed to send voucher generated email:', err);
+      });
 
       return voucher;
     } catch (error) {
@@ -212,6 +218,11 @@ class VoucherService {
 
       logger.info(`Voucher redeemed: ${voucher.code} by user ${redeemedByUserId}`);
 
+      // Send email notification (async, don't wait)
+      this.sendVoucherRedeemedEmail(updatedVoucher).catch(err => {
+        logger.error('Failed to send voucher redeemed email:', err);
+      });
+
       return updatedVoucher;
     } catch (error) {
       logger.error('Redeem voucher error:', error);
@@ -286,6 +297,44 @@ class VoucherService {
       };
     } catch (error) {
       logger.error('Get stats error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send voucher generated email
+   */
+  async sendVoucherGeneratedEmail(voucher) {
+    try {
+      const [user, partner] = await Promise.all([
+        prisma.user.findUnique({ where: { id: voucher.userId } }),
+        prisma.partner.findUnique({ where: { id: voucher.partnerId } })
+      ]);
+
+      if (user && partner && user.email) {
+        await emailService.sendVoucherGeneratedEmail(user, voucher, partner);
+      }
+    } catch (error) {
+      logger.error('Error sending voucher generated email:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send voucher redeemed email
+   */
+  async sendVoucherRedeemedEmail(voucher) {
+    try {
+      const [user, partner] = await Promise.all([
+        prisma.user.findUnique({ where: { id: voucher.userId } }),
+        prisma.partner.findUnique({ where: { id: voucher.partnerId } })
+      ]);
+
+      if (user && partner && user.email) {
+        await emailService.sendVoucherRedeemedEmail(user, voucher, partner);
+      }
+    } catch (error) {
+      logger.error('Error sending voucher redeemed email:', error);
       throw error;
     }
   }

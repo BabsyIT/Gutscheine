@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ihr Gutschein</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #89cdd3 0%, #a71a80 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+        }
+        .voucher-code {
+            background: white;
+            border: 2px dashed #a71a80;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border-radius: 8px;
+        }
+        .voucher-code-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: #a71a80;
+            letter-spacing: 2px;
+        }
+        .partner-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background: #a71a80;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 10px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎫 Ihr Babsy Gutschein</h1>
+    </div>
+
+    <div class="content">
+        <p>Hallo {{userName}},</p>
+
+        <p>Großartig! Ihr Gutschein für <strong>{{partnerName}}</strong> wurde erfolgreich generiert.</p>
+
+        <div class="voucher-code">
+            <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Ihr Gutschein-Code</div>
+            <div class="voucher-code-text">{{voucherCode}}</div>
+        </div>
+
+        <div class="partner-info">
+            <h3 style="margin-top: 0; color: #a71a80;">{{partnerName}}</h3>
+            <p>{{partnerDescription}}</p>
+
+            {{#if value}}
+            <p><strong>Wert:</strong> CHF {{value}}</p>
+            {{/if}}
+
+            {{#if discountPercentage}}
+            <p><strong>Rabatt:</strong> {{discountPercentage}}%</p>
+            {{/if}}
+
+            {{#if expiresAt}}
+            <p><strong>Gültig bis:</strong> {{expiresAt}}</p>
+            {{/if}}
+        </div>
+
+        {{#if partnerType}}
+        {{#if (eq partnerType "physical")}}
+        <div class="info-box">
+            <h4 style="margin-top: 0;">🏪 Einlösung im Laden</h4>
+            <ol>
+                <li>Öffnen Sie Ihre Gutscheine-Seite</li>
+                <li>Wählen Sie diesen Gutschein aus</li>
+                <li>Klicken Sie auf "QR scannen"</li>
+                <li>Scannen Sie den QR-Code im Laden</li>
+            </ol>
+            <p style="text-align: center;">
+                <a href="{{qrCodeUrl}}" class="button">Gutschein anzeigen</a>
+            </p>
+        </div>
+        {{else}}
+        <div class="info-box">
+            <h4 style="margin-top: 0;">🌐 Online einlösen</h4>
+            <ol>
+                <li>Besuchen Sie die Website des Partners</li>
+                <li>Geben Sie den Code im Checkout ein</li>
+                <li>Der Rabatt wird automatisch angewendet</li>
+            </ol>
+            {{#if partnerHomepage}}
+            <p style="text-align: center;">
+                <a href="{{partnerHomepage}}" class="button">Zur Partner-Website</a>
+            </p>
+            {{/if}}
+        </div>
+        {{/if}}
+        {{/if}}
+
+        <p style="margin-top: 30px;">
+            <strong>Hinweis:</strong> Bewahren Sie diesen Gutschein-Code sicher auf. Sie können ihn jederzeit in Ihrem Babsy-Account einsehen.
+        </p>
+
+        <p style="text-align: center; margin-top: 30px;">
+            <a href="{{qrCodeUrl}}" class="button">Meine Gutscheine anzeigen</a>
+        </p>
+    </div>
+
+    <div class="footer">
+        <p><strong>Babsy Partnergutscheine</strong></p>
+        <p>© {{currentYear}} Babsy. Alle Rechte vorbehalten.</p>
+        <p style="color: #999; font-size: 11px;">
+            Diese E-Mail wurde automatisch generiert. Bitte antworten Sie nicht auf diese Nachricht.
+        </p>
+    </div>
+</body>
+</html>
